@@ -1,4 +1,4 @@
-# yyoink - Product Requirements Document (PRD) v3.0
+# yyoink-wiki - Product Requirements Document (PRD) v3.0
 
 > **최종 통합 및 개발자용 상세 PRD** | 작성일: 2026-05-23
 
@@ -7,7 +7,7 @@
 ## 1. 제품 개요 (Product Overview)
 
 ### 1.1 제품명
-**yyoink**
+**yyoink-wiki**
 
 ### 1.2 버전
 v3.0.0 (Developer-Ready)
@@ -23,7 +23,7 @@ v3.0.0 (Developer-Ready)
 - **프라이버시 우선**: 데이터는 기본적으로 로컬에 저장되며, AI 기능은 사용자가 명시적으로 실행할 때만 선택한 토픽 자료를 전송
 
 ### 1.5 Personal LLM Wiki MVP Direction
-- **목표**: yyoink를 단순 스니펫 저장소에서 "출처가 붙은 개인 연구 위키"로 전환한다.
+- **목표**: yyoink-wiki를 단순 스니펫 저장소에서 "출처가 붙은 개인 연구 위키"로 전환한다.
 - **Source Records**: 선택 영역, 페이지 캡처, 메모, 클립보드 입력을 모두 `Source`로 저장하고 토픽에 연결한다.
 - **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Ask` 탭을 제공하며 같은 토픽 안에서 수집, 요약, 질의응답을 이어갈 수 있어야 한다.
 - **AI Draft Workflow**: `Generate Wiki`와 `Update Wiki`는 OpenAI Responses API를 호출해 JSON 초안을 만들고, 사용자가 검토/승인한 초안만 `WikiPage`가 된다.
@@ -47,7 +47,7 @@ v3.0.0 (Developer-Ready)
 - 스크린샷 (텍스트 검색 및 재활용 불가)
 
 ### 2.3 해결 가치
-yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며, 기술적 제약(복사 방지)을 제거하여 정보 수집의 마찰력을 제로로 만듭니다.
+yyoink-wiki는 수집과 분류를 **수집하는 순간**에 동시에 처리하며, 기술적 제약(복사 방지)을 제거하여 정보 수집의 마찰력을 제로로 만듭니다.
 
 ---
 
@@ -73,7 +73,7 @@ yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며,
 
 | ID | 사용자 스토리 | 수용 기준 (Acceptance Criteria) |
 | :--- | :--- | :--- |
-| **US-01** | **AS A** 리서처 **I WANT TO** 우클릭으로 텍스트를 저장하고 싶다 **SO THAT** 작업 흐름을 끊지 않고 정보를 수집할 수 있다. | **GIVEN** 텍스트가 선택된 상태에서 **WHEN** 우클릭 메뉴 'Save to yyoink' 클릭 시 **THEN** 선택된 프로젝트에 텍스트, URL, 제목이 저장된다. |
+| **US-01** | **AS A** 리서처 **I WANT TO** 우클릭으로 텍스트를 저장하고 싶다 **SO THAT** 작업 흐름을 끊지 않고 정보를 수집할 수 있다. | **GIVEN** 텍스트가 선택된 상태에서 **WHEN** 우클릭 메뉴 'Save to yyoink-wiki' 클릭 시 **THEN** 선택된 프로젝트에 텍스트, URL, 제목이 저장된다. |
 | **US-02** | **AS A** 크리에이터 **I WANT TO** 프로젝트별로 색상을 지정하고 싶다 **SO THAT** 시각적으로 정보를 빠르게 구분할 수 있다. | **GIVEN** 프로젝트 생성 모달에서 **WHEN** 8가지 색상 중 하나를 선택하고 저장하면 **THEN** 해당 프로젝트와 스니펫에 색상 코드가 적용된다. |
 | **US-03** | **AS A** 사용자 **I WANT TO** 복사 방지된 사이트에서 텍스트를 선택하고 싶다 **SO THAT** 필요한 정보를 강제로 추출할 수 있다. | **GIVEN** 복사 방지된 페이지에서 **WHEN** 'Bypass' 버튼을 클릭하면 **THEN** 드래그 및 우클릭이 가능해진다. |
 | **US-04** | **AS A** 사용자 **I WANT TO** 강력 모드를 사용하고 싶다 **SO THAT** 일반적인 우회로 해결되지 않는 사이트의 제약을 풀 수 있다. | **GIVEN** 사이드 패널에서 **WHEN** 'Bypass' 버튼을 500ms 이상 길게 누르면 **THEN** 해당 사이트의 JS가 비활성화되며 강력 우회가 적용된다. |
@@ -81,7 +81,7 @@ yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며,
 | **US-06** | **AS A** 사용자 **I WANT TO** 직접 메모를 작성하고 싶다 **SO THAT** 웹 사이트 내용 외의 내 생각을 함께 저장할 수 있다. | **GIVEN** 사이드 패널에서 **WHEN** 'Memo' 아이콘 클릭 후 텍스트 입력 및 저장 시 **THEN** 새로운 스니펫으로 저장된다. |
 | **US-07** | **AS A** 사용자 **I WANT TO** 데이터를 마크다운으로 내보내고 싶다 **SO THAT** 노션이나 옵시디언 같은 도구에서 활용할 수 있다. | **GIVEN** 내보내기 모달에서 **WHEN** 'Markdown' 선택 시 **THEN** 프로젝트별로 그룹화된 .md 파일이 다운로드된다. |
 | **US-08** | **AS A** 사용자 **I WANT TO** 저장된 스니펫을 검색하고 싶다 **SO THAT** 과거에 저장한 정보를 빠르게 찾을 수 있다. | **GIVEN** 검색창에 키워드 입력 시 **WHEN** 200ms 경과 후 **THEN** 해당 키워드가 포함된 스니펫만 실시간으로 필터링된다. |
-| **US-09** | **AS A** 사용자 **I WANT TO** 클립보드 내용을 즉시 저장하고 싶다 **SO THAT** 다른 앱에서 복사한 내용도 yyoink에 통합할 수 있다. | **GIVEN** 사이드 패널에서 **WHEN** 'Paste' 아이콘을 클릭하면 **THEN** 현재 클립보드의 텍스트가 즉시 스니펫으로 저장된다. |
+| **US-09** | **AS A** 사용자 **I WANT TO** 클립보드 내용을 즉시 저장하고 싶다 **SO THAT** 다른 앱에서 복사한 내용도 yyoink-wiki에 통합할 수 있다. | **GIVEN** 사이드 패널에서 **WHEN** 'Paste' 아이콘을 클릭하면 **THEN** 현재 클립보드의 텍스트가 즉시 스니펫으로 저장된다. |
 | **US-10** | **AS A** 사용자 **I WANT TO** 페이지 전체 내용을 저장하고 싶다 **SO THAT** 중요한 아티클 전체를 보관할 수 있다. | **GIVEN** 웹 페이지에서 **WHEN** 'Capture' 버튼을 클릭하면 **THEN** 본문 텍스트가 추출되어 스니펫으로 저장된다. |
 
 ---
@@ -322,7 +322,7 @@ interface Settings {
 ```
 Container
 ├── Header
-│   ├── Logo (yyoink 브랜딩)
+│   ├── Logo (yyoink-wiki 브랜딩)
 │   └── Header Actions (Coffee, Settings)
 ├── Project Selector (커스텀 드롭다운)
 ├── Quick Actions Bar
@@ -515,7 +515,7 @@ Container
 - **권한 설명**: 왜 `all_urls`와 `storage` 권한이 필요한지 명시
 
 ### 16.2 패키징
-- `zip -r yyoink-v1.0.0.zip . -x "*.git*" "*.DS_Store*" "PRD*"`
+- `zip -r yyoink-wiki-v1.0.0.zip . -x "*.git*" "*.DS_Store*" "PRD*"`
 
 ---
 
@@ -556,4 +556,4 @@ Container
 | **총계** | **4,326** | - |
 
 ---
-_이 문서는 yyoink 프로젝트의 최종 요구사항을 담고 있으며, 개발 및 QA의 기준점으로 사용됩니다._
+_이 문서는 yyoink-wiki 프로젝트의 최종 요구사항을 담고 있으며, 개발 및 QA의 기준점으로 사용됩니다._

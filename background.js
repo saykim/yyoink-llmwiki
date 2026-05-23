@@ -1,5 +1,5 @@
 /**
- * yyoink - Background Service Worker
+ * yyoink-wiki - Background Service Worker
  * 
  * @author SYK (ooak.studio.101)
  * @copyright © 2026 ooak.studio.101. All rights reserved.
@@ -80,7 +80,7 @@ function updateContextMenus() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
       id: "saveToContextPilotRoot",
-      title: "Save to yyoink",
+      title: "Save to yyoink-wiki",
       contexts: ["selection"],
     });
 

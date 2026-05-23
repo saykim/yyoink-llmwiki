@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "yyoink",
+  "name": "yyoink-wiki",
   "version": "1.0.0",
-  "description": "Grab anything from the web - bypass copy protection, collect snippets, organize by project",
+  "description": "Collect web sources and turn them into a personal LLM wiki",
   "author": "SYK (ooak.studio.101)",
   "homepage_url": "https://www.buymeacoffee.com/ooak",
   "icons": {
@@ -39,7 +39,7 @@
         "default": "Ctrl+Shift+P",
         "mac": "Command+Shift+P"
       },
-      "description": "Toggle yyoink side panel"
+      "description": "Toggle yyoink-wiki side panel"
     }
   },
   "action": {
@@ -48,6 +48,6 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Open yyoink"
+    "default_title": "Open yyoink-wiki"
   }
 }

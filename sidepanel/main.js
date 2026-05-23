@@ -1,5 +1,5 @@
 /**
- * yyoink - Side Panel Main Script (Optimized)
+ * yyoink-wiki - Side Panel Main Script (Optimized)
  * 
  * @author SYK (ooak.studio.101)
  * @copyright © 2026 ooak.studio.101. All rights reserved.
@@ -382,7 +382,7 @@ function checkStorageUsage() {
       
       showToast(msg);
       
-      console.warn(`yyoink: Storage usage at ${usagePercent.toFixed(2)}%`);
+      console.warn(`yyoink-wiki: Storage usage at ${usagePercent.toFixed(2)}%`);
     }
   });
 }
@@ -1519,7 +1519,7 @@ function handleExport(format) {
         exportPayload.topics,
         exportPayload.wikiPages,
       );
-      filename = "yyoink-export.txt";
+      filename = "yyoink-wiki-export.txt";
       mimeType = "text/plain";
       break;
     case "md":
@@ -1567,7 +1567,7 @@ function exportAsTxt(snippetList, projectsList, wikiPageList = []) {
 }
 
 function exportAsMd(snippetList, projectsList, wikiPageList = []) {
-  let output = "# yyoink Wiki Export\n\n";
+  let output = "# yyoink-wiki Export\n\n";
   projectsList.forEach((project) => {
     const projectSnippets = snippetList.filter(
       (s) => (s.topicId || s.projectId) === project.id,

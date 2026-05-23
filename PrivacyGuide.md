@@ -1,10 +1,10 @@
-# 개인정보 처리방침 - yyoink
+# 개인정보 처리방침 - yyoink-wiki
 
 **최종 업데이트**: 2026년 5월
 
 ## 개요
 
-yyoink는 웹에서 선택한 텍스트와 메모를 수집해 주제별 개인 위키로 정리하는 Chrome 확장 프로그램입니다. 사용자의 개인정보 보호는 무엇보다 중요합니다.
+yyoink-wiki는 웹에서 선택한 텍스트와 메모를 수집해 주제별 개인 위키로 정리하는 Chrome 확장 프로그램입니다. 사용자의 개인정보 보호는 무엇보다 중요합니다.
 
 ## 데이터 수집
 
@@ -28,13 +28,13 @@ Source, Topic, WikiPage, AI Draft는 브라우저의 IndexedDB에 저장됩니�
 
 - **기본 로컬 저장**: 수집 자료는 기본적으로 사용자의 기기에 저장됩니다.
 - **클라우드 동기화 없음**: 별도의 클라우드 서버에 동기화되지 않습니다.
-- **제3자 공유 없음**: yyoink는 데이터를 판매하거나 제품 분석 목적으로 공유하지 않습니다.
+- **제3자 공유 없음**: yyoink-wiki는 데이터를 판매하거나 제품 분석 목적으로 공유하지 않습니다.
 
 ## AI 기능
 
 AI 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고 `Generate Wiki`, `Update Wiki`, 또는 `Ask`를 직접 실행할 때만 선택된 Topic의 Source, WikiPage, 질문 내용이 OpenAI API로 전송됩니다.
 
-- yyoink는 자체 서버를 운영하지 않으며 AI 요청은 사용자의 브라우저에서 OpenAI API로 직접 전송됩니다.
+- yyoink-wiki는 자체 서버를 운영하지 않으며 AI 요청은 사용자의 브라우저에서 OpenAI API로 직접 전송됩니다.
 - API key는 사용자의 기기에 로컬 저장됩니다.
 - AI 응답은 Draft로 저장되며, 사용자가 승인하기 전에는 WikiPage에 반영되지 않습니다.
 - OpenAI로 전송된 데이터는 OpenAI의 개인정보 및 데이터 처리 정책의 적용을 받습니다.
@@ -76,13 +76,13 @@ _이 확장 프로그램은 사용자의 데이터를 판매하지 않으며, AI
 <br>
 <br>
 
-# Privacy Policy - yyoink
+# Privacy Policy - yyoink-wiki
 
 **Last Updated**: May 2026
 
 ## Overview
 
-yyoink is a Chrome extension that helps you collect selected text and notes from the web and organize them into a topic-based personal wiki. Your privacy is important to us.
+yyoink-wiki is a Chrome extension that helps you collect selected text and notes from the web and organize them into a topic-based personal wiki. Your privacy is important to us.
 
 ## Data Collection
 
@@ -106,13 +106,13 @@ Sources, Topics, WikiPages, and AI Drafts are stored locally in browser IndexedD
 
 - **Local by default**: Your collected material is stored on your device by default
 - **No cloud sync**: Data is not synced across devices
-- **No third-party sharing for analytics**: yyoink does not sell your data or share it for product analytics
+- **No third-party sharing for analytics**: yyoink-wiki does not sell your data or share it for product analytics
 
 ## AI Features
 
 AI features are optional. When you enter an OpenAI API key and explicitly run `Generate Wiki`, `Update Wiki`, or `Ask`, the selected Topic's Sources, WikiPage, and your question are sent to the OpenAI API.
 
-- yyoink does not run its own server; AI requests are sent directly from your browser to OpenAI.
+- yyoink-wiki does not run its own server; AI requests are sent directly from your browser to OpenAI.
 - Your API key is stored locally on your device.
 - AI responses are saved as Drafts and are not applied to WikiPages until you approve them.
 - Data sent to OpenAI is governed by OpenAI's privacy and data processing policies.
