@@ -627,7 +627,7 @@
       </div>
 
       <!-- Wiki Editor Modal -->
-      <div class="modal modal-lg" id="wikiEditorModal">
+      <div class="modal modal-lg wiki-editor-modal" id="wikiEditorModal">
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon">📝</div>
@@ -636,16 +636,17 @@
           <button class="btn-icon modal-close">&times;</button>
         </div>
         <div class="modal-body">
+          <div class="wiki-editor-hint" id="wikiEditorHint"></div>
           <textarea
             id="wikiMarkdownText"
             class="textarea"
-            rows="16"
+            rows="12"
             placeholder="# Topic&#10;&#10;## Summary&#10;&#10;## Key Notes&#10;&#10;## Open Questions"
           ></textarea>
           <div class="draft-meta" id="wikiEditorMeta"></div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary modal-close">Cancel</button>
+          <button class="btn btn-secondary modal-cancel">Cancel</button>
           <button class="btn btn-primary" id="saveWikiBtn">Save Wiki</button>
         </div>
       </div>

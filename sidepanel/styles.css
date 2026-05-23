@@ -1659,6 +1659,9 @@ body {
   width: 100%;
   max-width: 380px;
   display: none;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
   animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: both;
   box-shadow: var(--shadow-xl);
@@ -1668,7 +1671,7 @@ body {
 }
 
 .modal.active {
-  display: block;
+  display: flex;
 }
 
 .modal-lg {
@@ -1721,7 +1724,7 @@ body {
   color: var(--text-primary);
 }
 
-.modal-close {
+.btn-icon.modal-close {
   font-size: 24px;
   color: var(--text-muted);
   background: transparent;
@@ -1732,6 +1735,8 @@ body {
 
 .modal-body {
   padding: 24px;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: 60vh;
   overflow-y: auto;
 }
@@ -1761,12 +1766,73 @@ body {
 
 .modal-footer {
   display: flex;
+  flex: 0 0 auto;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-tertiary);
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.modal-footer .btn {
+  min-width: 96px;
+  min-height: 42px;
+  padding: 10px 16px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.wiki-editor-modal .modal-body {
+  display: grid;
+  gap: 12px;
+}
+
+.wiki-editor-hint {
+  padding: 11px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.wiki-editor-hint strong {
+  color: var(--text-primary);
+}
+
+#wikiMarkdownText {
+  min-height: 220px;
+  height: 220px;
+  max-height: none;
+}
+
+@media (max-height: 720px) {
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-body {
+    padding: 18px 20px;
+  }
+
+  .modal-footer {
+    padding: 12px 20px;
+  }
+
+  #wikiMarkdownText {
+    min-height: 160px;
+    height: 180px;
+  }
+}
+
+@media (max-height: 640px) {
+  #wikiMarkdownText {
+    min-height: 140px;
+    height: 150px;
+  }
 }
 
 /* Form Elements */

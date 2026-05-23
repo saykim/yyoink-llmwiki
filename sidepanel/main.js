@@ -1008,6 +1008,22 @@ function renderWikiPanel() {
 }
 
 function buildDefaultWikiMarkdown(topic, topicSources) {
+  if (!topicSources?.length) {
+    return [
+      `# ${topic?.title || topic?.name || "Topic Wiki"}`,
+      "",
+      "## Working Notes",
+      "-",
+      "",
+      "## What I Need To Collect",
+      "- Source:",
+      "- Why it matters:",
+      "",
+      "## Questions For ChatGPT / Claude",
+      "-",
+    ].join("\n");
+  }
+
   const sourceList = (topicSources || [])
     .slice(0, 10)
     .map((source) => {
@@ -1057,10 +1073,18 @@ function openWikiEditor() {
 
   const wikiPage = getSelectedWikiPage();
   const topicSources = getSelectedTopicSources();
+  const hintEl = document.getElementById("wikiEditorHint");
+  if (hintEl) {
+    hintEl.innerHTML = topicSources.length
+      ? `<strong>${topicSources.length} sources available.</strong> Summarize claims in your own words and keep source IDs next to important evidence.`
+      : `<strong>No sources in this topic yet.</strong> You can write manual notes here, but the normal flow is to collect sources first, then edit the Wiki and copy a Prompt Pack.`;
+  }
   document.getElementById("wikiMarkdownText").value =
     wikiPage?.bodyMarkdown || buildDefaultWikiMarkdown(topic, topicSources);
   document.getElementById("wikiEditorMeta").textContent =
-    `${topicSources.length} local sources available for this topic`;
+    topicSources.length
+      ? `${topicSources.length} local sources available for this topic`
+      : "Tip: save sources from the Sources tab before building a source-grounded wiki.";
   openModal("wikiEditorModal");
 }
 
