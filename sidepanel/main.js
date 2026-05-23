@@ -255,11 +255,13 @@ async function init() {
   loadTheme();
 
   chrome.runtime.onMessage.addListener((message) => {
-    if (message.type === "SNIPPET_ADDED") {
-      snippets.unshift(message.snippet);
+    if (message.type === "SOURCE_ADDED" || message.type === "SNIPPET_ADDED") {
+      const source = message.source || YyoinkWiki.models.normalizeSnippetToSource(message.snippet);
+      sources.unshift(source);
+      syncLegacyAliases();
       renderSnippets();
       renderProjectDropdown();
-      showToast("Snippet saved!");
+      showToast("Source saved!");
     }
 
     if (message.type === "OPEN_CREATE_PROJECT") {
@@ -654,18 +656,17 @@ async function forceSelectAndSave() {
     });
 
     if (response && response.text && response.text.trim()) {
-      const snippet = {
-        id: generateId(),
+      const source = YyoinkWiki.models.createSource({
         text: response.text.trim(),
         sourceUrl: tab.url,
         pageTitle: tab.title,
         domain: new URL(tab.url).hostname,
-        projectId: selectedProjectId !== "all" ? selectedProjectId : "default",
-        createdAt: new Date().toISOString(),
-      };
+        topicId: selectedProjectId !== "all" ? selectedProjectId : "default",
+        type: "selection",
+      });
 
-      snippets.unshift(snippet);
-      saveData();
+      sources.unshift(source);
+      await saveData();
       renderProjectDropdown();
       renderSnippets();
       showToast("Selection saved!");
@@ -766,7 +767,10 @@ function renderProjectDropdown() {
         selectedProjectId = option.dataset.id;
 
         if (selectedProjectId !== "all") {
-          chrome.storage.local.set({ activeProjectId: selectedProjectId });
+          chrome.storage.local.set({
+            activeProjectId: selectedProjectId,
+            activeTopicId: selectedProjectId,
+          });
         }
 
         renderProjectDropdown();
@@ -963,21 +967,29 @@ function confirmDeleteProject() {
   ).value;
 
   if (action === "delete") {
-    snippets = snippets.filter((s) => s.projectId !== deleteProjectId);
+    sources = sources.filter((s) => s.projectId !== deleteProjectId);
   } else {
     const moveToId = document.getElementById("moveToProject").value;
-    snippets = snippets.map((s) =>
-      s.projectId === deleteProjectId ? { ...s, projectId: moveToId } : s,
+    sources = sources.map((s) =>
+      s.projectId === deleteProjectId
+        ? { ...s, projectId: moveToId, topicId: moveToId, aiStatus: "stale" }
+        : s,
     );
   }
 
-  projects = projects.filter((p) => p.id !== deleteProjectId);
+  topics = topics.filter((p) => p.id !== deleteProjectId);
+  syncLegacyAliases();
 
   if (selectedProjectId === deleteProjectId) {
     selectedProjectId = "all";
   }
 
   saveData();
+  chrome.runtime.sendMessage({ type: "REFRESH_MENUS" }, () => {
+    if (chrome.runtime.lastError) {
+      console.log("Could not refresh context menus:", chrome.runtime.lastError.message);
+    }
+  });
   renderProjectDropdown();
   renderSnippets();
   closeAllModals();
@@ -1009,18 +1021,17 @@ async function capturePage() {
     if (response?.error) {
       showToast("Please refresh the page and try again");
     } else if (response?.text) {
-      const snippet = {
-        id: generateId(),
+      const source = YyoinkWiki.models.createSource({
         text: response.text.substring(0, 10000),
         sourceUrl: response.url,
         pageTitle: response.title,
         domain: response.domain,
-        projectId: selectedProjectId !== "all" ? selectedProjectId : "default",
-        createdAt: new Date().toISOString(),
-      };
+        topicId: selectedProjectId !== "all" ? selectedProjectId : "default",
+        type: "page",
+      });
 
-      snippets.unshift(snippet);
-      saveData();
+      sources.unshift(source);
+      await saveData();
       renderProjectDropdown();
       renderSnippets();
       showToast("Page captured!");
@@ -1091,6 +1102,8 @@ function saveSnippetEdit() {
   if (snippet) {
     snippet.text = text;
     snippet.projectId = projectId;
+    snippet.topicId = projectId;
+    snippet.aiStatus = "stale";
     saveData();
     renderProjectDropdown();
     renderSnippets();
@@ -1123,16 +1136,16 @@ function saveMemo() {
     return;
   }
 
-  snippets.unshift({
-    id: generateId(),
+  const source = YyoinkWiki.models.createSource({
     text,
     sourceUrl: "memo://local",
     pageTitle: "Quick Memo",
     domain: "Memo",
-    projectId: projectId || projects[0]?.id,
-    createdAt: new Date().toISOString(),
+    topicId: projectId || projects[0]?.id,
+    type: "memo",
   });
 
+  sources.unshift(source);
   saveData();
   renderProjectDropdown();
   renderSnippets();
@@ -1149,17 +1162,17 @@ async function pasteFromClipboard() {
       return;
     }
 
-    snippets.unshift({
-      id: generateId(),
+    const source = YyoinkWiki.models.createSource({
       text: text.trim().substring(0, 10000),
       sourceUrl: "clipboard://paste",
       pageTitle: "Pasted from Clipboard",
       domain: "Clipboard",
-      projectId:
+      topicId:
         selectedProjectId !== "all" ? selectedProjectId : projects[0]?.id,
-      createdAt: new Date().toISOString(),
+      type: "clipboard",
     });
 
+    sources.unshift(source);
     saveData();
     renderProjectDropdown();
     renderSnippets();
@@ -1170,7 +1183,8 @@ async function pasteFromClipboard() {
 }
 
 function deleteSnippet(id) {
-  snippets = snippets.filter((s) => s.id !== id);
+  sources = sources.filter((s) => s.id !== id);
+  syncLegacyAliases();
   saveData();
   renderProjectDropdown();
   renderSnippets();
@@ -1189,23 +1203,26 @@ function saveNewProject() {
   const project = {
     id: generateId(),
     name,
+    title: name,
+    description: "",
     color: selectedColor,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   projects.push(project);
 
   if (window.pendingSnippetData) {
     const { text, tabInfo } = window.pendingSnippetData;
-    snippets.unshift({
-      id: generateId(),
+    const source = YyoinkWiki.models.createSource({
       text,
       sourceUrl: tabInfo.url,
       pageTitle: tabInfo.title,
       domain: tabInfo.domain,
-      projectId: project.id,
-      createdAt: new Date().toISOString(),
+      topicId: project.id,
+      type: "selection",
     });
+    sources.unshift(source);
     window.pendingSnippetData = null;
     showToast("Project created & snippet saved!");
   } else {
@@ -1213,6 +1230,11 @@ function saveNewProject() {
   }
 
   saveData();
+  chrome.runtime.sendMessage({ type: "REFRESH_MENUS" }, () => {
+    if (chrome.runtime.lastError) {
+      console.log("Could not refresh context menus:", chrome.runtime.lastError.message);
+    }
+  });
   renderProjectDropdown();
   renderSnippets();
   closeAllModals();

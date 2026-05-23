@@ -67,22 +67,12 @@ chrome.runtime.onInstalled.addListener(() => {
   updateContextMenus();
 });
 
-function initializeStorage() {
-  chrome.storage.local.get(["snippets", "projects"], (result) => {
-    if (!result.snippets) chrome.storage.local.set({ snippets: [] });
-    if (!result.projects) {
-      chrome.storage.local.set({
-        projects: [
-          {
-            id: "default",
-            name: "Default",
-            color: "#6366f1",
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      });
-    }
-  });
+async function initializeStorage() {
+  try {
+    await YyoinkWiki.migration.migrateLegacyDataIfNeeded();
+  } catch (error) {
+    console.error("Migration failed:", error);
+  }
 }
 
 function updateContextMenus() {
@@ -93,8 +83,10 @@ function updateContextMenus() {
       contexts: ["selection"],
     });
 
-    chrome.storage.local.get(["projects"], (result) => {
-      const projects = result.projects || [];
+    YyoinkWiki.repository.getAll("topics").then((topics) => {
+      const projects = topics.length
+        ? topics.map((topic) => ({ id: topic.id, name: topic.title }))
+        : [{ id: "default", name: "Default" }];
 
       projects.forEach((project) => {
         chrome.contextMenus.create({
@@ -115,16 +107,18 @@ function updateContextMenus() {
       chrome.contextMenus.create({
         id: "saveToActiveProject",
         parentId: "saveToContextPilotRoot",
-        title: "Save to Active Project",
+        title: "Save to Active Topic",
         contexts: ["selection"],
       });
 
       chrome.contextMenus.create({
         id: "createNewProject",
         parentId: "saveToContextPilotRoot",
-        title: "+ Create New Project...",
+        title: "+ Create New Topic...",
         contexts: ["selection"],
       });
+    }).catch((error) => {
+      console.error("Failed to build context menus:", error);
     });
   });
 }
@@ -166,8 +160,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 
   if (info.menuItemId === "saveToActiveProject") {
-    chrome.storage.local.get(["activeProjectId"], (result) => {
-      saveSnippet(info.selectionText, tab, result.activeProjectId || "default");
+    chrome.storage.local.get(["activeTopicId", "activeProjectId"], (result) => {
+      saveSnippet(info.selectionText, tab, result.activeTopicId || result.activeProjectId || "default");
     });
     return;
   }
@@ -181,32 +175,22 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-function saveSnippet(text, tab, projectId) {
-  const snippet = {
-    id: generateId(),
+async function saveSnippet(text, tab, projectId) {
+  const source = YyoinkWiki.models.createSource({
     text,
     sourceUrl: tab.url,
     pageTitle: tab.title,
     domain: new URL(tab.url).hostname,
-    projectId,
-    createdAt: new Date().toISOString(),
-  };
+    topicId: projectId,
+    type: "selection",
+  });
 
-  chrome.storage.local.get(["snippets"], (result) => {
-    const snippets = result.snippets || [];
-    snippets.unshift(snippet);
-    chrome.storage.local.set({ snippets }, () => {
-      // Send message to sidepanel if it's open
-      chrome.runtime.sendMessage(
-        { type: "SNIPPET_ADDED", snippet },
-        (response) => {
-          // Handle lastError silently - sidepanel might not be open
-          if (chrome.runtime.lastError) {
-            console.log("Sidepanel not open:", chrome.runtime.lastError.message);
-          }
-        }
-      );
-    });
+  await YyoinkWiki.repository.put("sources", source);
+
+  chrome.runtime.sendMessage({ type: "SOURCE_ADDED", source }, () => {
+    if (chrome.runtime.lastError) {
+      console.log("Sidepanel not open:", chrome.runtime.lastError.message);
+    }
   });
 }
 
@@ -259,7 +243,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   return true;
 });
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
