@@ -6,6 +6,13 @@
  * @license Proprietary
  */
 
+importScripts(
+  "shared/wiki-models.js",
+  "shared/ai-contract.js",
+  "shared/idb-repository.js",
+  "shared/migration.js",
+);
+
 // Track side panel open state per window
 const sidePanelOpenState = new Set();
 
