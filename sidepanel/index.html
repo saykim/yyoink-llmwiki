@@ -333,14 +333,20 @@
             <h2 class="wiki-title" id="wikiTitle">Topic Wiki</h2>
           </div>
           <div class="wiki-actions">
-            <button class="btn btn-primary" id="generateWikiBtn">
-              Generate Wiki
+            <button class="btn btn-primary" id="editWikiBtn">
+              Edit Wiki
+            </button>
+            <button class="btn btn-secondary" id="copyPromptPackBtn">
+              Copy Prompt Pack
+            </button>
+            <button class="btn btn-secondary" id="generateWikiBtn">
+              Cloud Generate
             </button>
             <button class="btn btn-secondary" id="updateWikiBtn">
-              Update Wiki
+              Cloud Update
             </button>
             <button class="btn btn-secondary" id="reviewDraftBtn">
-              Review Draft
+              Review Cloud Draft
             </button>
           </div>
         </div>
@@ -354,9 +360,14 @@
             id="askInput"
             class="textarea"
             rows="3"
-            placeholder="Ask this topic..."
+            placeholder="Search this topic's local evidence..."
           ></textarea>
-          <button class="btn btn-primary" id="askTopicBtn">Ask</button>
+          <div class="ask-actions">
+            <button class="btn btn-primary" id="askTopicBtn">Find Evidence</button>
+            <button class="btn btn-secondary" id="copyAskPromptBtn">
+              Copy Prompt Pack
+            </button>
+          </div>
         </div>
       </section>
 
@@ -566,7 +577,11 @@
           </div>
 
           <div class="settings-section">
-            <h4 class="settings-title">AI Provider</h4>
+            <h4 class="settings-title">Advanced Cloud AI</h4>
+            <p class="settings-note">
+              Default mode works without an API key. Use this only for optional
+              direct OpenAI calls.
+            </p>
             <div class="form-group">
               <label class="form-label" for="aiApiKeyInput">OpenAI API Key</label>
               <input
@@ -600,6 +615,30 @@
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Wiki Editor Modal -->
+      <div class="modal modal-lg" id="wikiEditorModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">📝</div>
+            <h3>Edit Topic Wiki</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <textarea
+            id="wikiMarkdownText"
+            class="textarea"
+            rows="16"
+            placeholder="# Topic&#10;&#10;## Summary&#10;&#10;## Key Notes&#10;&#10;## Open Questions"
+          ></textarea>
+          <div class="draft-meta" id="wikiEditorMeta"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary modal-close">Cancel</button>
+          <button class="btn btn-primary" id="saveWikiBtn">Save Wiki</button>
         </div>
       </div>
 

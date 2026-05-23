@@ -531,6 +531,15 @@ function setupEventListeners() {
     .getElementById("saveAISettingsBtn")
     ?.addEventListener("click", saveAISettings);
   document
+    .getElementById("editWikiBtn")
+    ?.addEventListener("click", openWikiEditor);
+  document
+    .getElementById("saveWikiBtn")
+    ?.addEventListener("click", saveWikiFromEditor);
+  document
+    .getElementById("copyPromptPackBtn")
+    ?.addEventListener("click", () => copyPromptPack());
+  document
     .getElementById("generateWikiBtn")
     ?.addEventListener("click", () => runWikiAIAction("generateWiki"));
   document
@@ -548,6 +557,11 @@ function setupEventListeners() {
   document
     .getElementById("askTopicBtn")
     ?.addEventListener("click", askCurrentTopic);
+  document
+    .getElementById("copyAskPromptBtn")
+    ?.addEventListener("click", () =>
+      copyPromptPack(document.getElementById("askInput")?.value.trim() || ""),
+    );
 
   // Theme options
   document.querySelectorAll(".theme-option").forEach((btn) => {
@@ -990,7 +1004,99 @@ function renderWikiPanel() {
   titleEl.textContent = topic?.title || topic?.name || "Topic Wiki";
   contentEl.innerHTML = wikiPage
     ? `<p>${markdownToSafeHtml(wikiPage.bodyMarkdown)}</p>`
-    : `<p>No approved wiki page yet.</p>`;
+    : `<p>No local wiki yet. Use Edit Wiki to start from your collected sources, or copy a Prompt Pack into your subscription AI.</p>`;
+}
+
+function buildDefaultWikiMarkdown(topic, topicSources) {
+  const sourceList = (topicSources || [])
+    .slice(0, 12)
+    .map((source) => `- [${source.id}] ${source.pageTitle || source.domain || source.type}`)
+    .join("\n");
+
+  return [
+    `# ${topic?.title || topic?.name || "Topic Wiki"}`,
+    "",
+    "## Summary",
+    "",
+    "## Key Notes",
+    "",
+    "## Open Questions",
+    "",
+    "## Sources",
+    sourceList || "- No sources collected yet.",
+  ].join("\n");
+}
+
+function openWikiEditor() {
+  const topic = getSelectedTopic();
+  if (!topic) {
+    showToast("Select a topic first");
+    return;
+  }
+
+  const wikiPage = getSelectedWikiPage();
+  const topicSources = getSelectedTopicSources();
+  document.getElementById("wikiMarkdownText").value =
+    wikiPage?.bodyMarkdown || buildDefaultWikiMarkdown(topic, topicSources);
+  document.getElementById("wikiEditorMeta").textContent =
+    `${topicSources.length} local sources available for this topic`;
+  openModal("wikiEditorModal");
+}
+
+async function saveWikiFromEditor() {
+  const topic = getSelectedTopic();
+  const bodyMarkdown = document.getElementById("wikiMarkdownText").value.trim();
+  if (!topic) {
+    showToast("Select a topic first");
+    return;
+  }
+  if (!bodyMarkdown) {
+    showToast("Wiki cannot be empty");
+    return;
+  }
+
+  const topicSources = getSelectedTopicSources();
+  const page = YyoinkWiki.models.createManualWikiPage({
+    topic,
+    existingPage: getSelectedWikiPage(),
+    bodyMarkdown,
+    sourceIds: topicSources.map((source) => source.id),
+  });
+  wikiPages = wikiPages.filter((item) => item.id !== page.id);
+  wikiPages.unshift(page);
+  sources = sources.map((source) =>
+    source.topicId === topic.id
+      ? { ...source, aiStatus: "processed", updatedAt: new Date().toISOString() }
+      : source,
+  );
+  syncLegacyAliases();
+  await saveData();
+  closeAllModals();
+  renderWikiPanel();
+  renderSnippets();
+  showToast("Wiki saved");
+}
+
+async function copyPromptPack(question = "") {
+  const topic = getSelectedTopic();
+  if (!topic) {
+    showToast("Select a topic first");
+    return;
+  }
+
+  const promptPack = YyoinkWiki.models.buildPromptPack({
+    topic,
+    wikiPage: getSelectedWikiPage(),
+    sources: getSelectedTopicSources(),
+    question,
+  });
+
+  try {
+    await navigator.clipboard.writeText(promptPack);
+    showToast("Prompt Pack copied");
+  } catch {
+    showToast("Could not copy Prompt Pack");
+  }
 }
 
 function loadAISettings() {
@@ -1106,31 +1212,13 @@ async function askCurrentTopic() {
   }
 
   appendAskMessage("user", question);
-  document.getElementById("askInput").value = "";
-
-  const result = await new Promise((resolve) => {
-    chrome.runtime.sendMessage(
-      { type: "RUN_AI_ACTION", action: "askTopic", topicId: topic.id, question },
-      resolve,
-    );
+  const results = YyoinkWiki.models.searchTopicEvidence({
+    question,
+    wikiPage: getSelectedWikiPage(),
+    sources: getSelectedTopicSources(),
   });
 
-  if (result?.draft) {
-    aiDrafts.unshift(result.draft);
-    await saveData();
-  }
-
-  if (result?.draft?.status === "ready") {
-    appendAskMessage(
-      "assistant",
-      result.draft.generatedSummary || result.draft.proposedWikiMarkdown,
-    );
-  } else {
-    appendAskMessage(
-      "assistant",
-      result?.error || result?.draft?.weakClaims?.[0] || "AI failed",
-    );
-  }
+  appendEvidenceResults(results);
 }
 
 function appendAskMessage(role, text) {
@@ -1138,6 +1226,52 @@ function appendAskMessage(role, text) {
   const div = document.createElement("div");
   div.className = `ask-message ask-message-${role}`;
   div.textContent = text;
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function appendEvidenceResults(results) {
+  const thread = document.getElementById("askThread");
+  const div = document.createElement("div");
+  div.className = "ask-message ask-message-evidence";
+
+  if (!results.length) {
+    div.textContent = "No local evidence found. Try another term or collect more sources.";
+  } else {
+    results.forEach((result) => {
+      const item = document.createElement("div");
+      item.className = "evidence-result";
+
+      const title = document.createElement("div");
+      title.className = "evidence-title";
+      title.textContent = result.title;
+
+      const meta = document.createElement("div");
+      meta.className = "evidence-meta";
+      meta.textContent = [result.type, result.domain].filter(Boolean).join(" · ");
+
+      const excerpt = document.createElement("div");
+      excerpt.className = "evidence-excerpt";
+      excerpt.textContent = result.excerpt;
+
+      item.append(title, meta, excerpt);
+
+      if (/^https?:\/\//i.test(result.sourceUrl || "")) {
+        const linkWrap = document.createElement("div");
+        linkWrap.className = "evidence-meta";
+        const link = document.createElement("a");
+        link.href = result.sourceUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Open source";
+        linkWrap.appendChild(link);
+        item.appendChild(linkWrap);
+      }
+
+      div.appendChild(item);
+    });
+  }
+
   thread.appendChild(div);
   thread.scrollTop = thread.scrollHeight;
 }

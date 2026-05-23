@@ -18,16 +18,18 @@ v3.0.0 (Developer-Ready)
 ### 1.4 핵심 가치 제안
 - **간편한 수집**: 우클릭 한 번으로 선택한 텍스트 즉시 저장
 - **주제별 정리**: 색상 코드가 있는 토픽으로 소스 자료 분류
-- **근거 기반 위키**: 저장한 소스를 바탕으로 AI 초안을 만들고 사용자가 승인한 내용만 위키에 반영
+- **근거 기반 위키**: 저장한 소스를 바탕으로 사용자가 위키를 편집하고 근거를 추적
+- **Prompt Pack**: Topic 전체 자료를 ChatGPT/Claude에 붙여넣기 좋은 패키지로 복사
 - **복사 방지 해제**: 복사가 막힌 웹사이트에서도 텍스트 추출 가능
-- **프라이버시 우선**: 데이터는 기본적으로 로컬에 저장되며, AI 기능은 사용자가 명시적으로 실행할 때만 선택한 토픽 자료를 전송
+- **프라이버시 우선**: 기본 사용 흐름은 로컬에서 동작하며 API key가 필요 없음
 
 ### 1.5 Personal LLM Wiki MVP Direction
 - **목표**: yyoink-wiki를 단순 스니펫 저장소에서 "출처가 붙은 개인 연구 위키"로 전환한다.
 - **Source Records**: 선택 영역, 페이지 캡처, 메모, 클립보드 입력을 모두 `Source`로 저장하고 토픽에 연결한다.
-- **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Ask` 탭을 제공하며 같은 토픽 안에서 수집, 요약, 질의응답을 이어갈 수 있어야 한다.
-- **AI Draft Workflow**: `Generate Wiki`와 `Update Wiki`는 OpenAI Responses API를 호출해 JSON 초안을 만들고, 사용자가 검토/승인한 초안만 `WikiPage`가 된다.
-- **Grounded Ask**: 사용자는 현재 토픽의 소스와 승인된 위키 본문을 근거로 질문할 수 있고, 답변은 관련 출처를 참조해야 한다.
+- **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Ask` 탭을 제공하며 같은 토픽 안에서 수집, 편집, 근거 검색을 이어갈 수 있어야 한다.
+- **Prompt Pack Workflow**: 사용자는 현재 Topic의 WikiPage와 Source Library를 ChatGPT/Claude용 프롬프트 패키지로 복사할 수 있다.
+- **Evidence Finder**: `Ask`는 기본적으로 외부 AI를 호출하지 않고 현재 토픽의 WikiPage와 Sources를 로컬 검색해 관련 근거를 보여준다.
+- **Advanced Cloud AI**: OpenAI API key를 입력한 사용자는 기존 Cloud Generate/Update/Draft 기능을 선택적으로 사용할 수 있다.
 - **Portability**: JSON export는 `version: 2` 형식으로 토픽, 소스, 위키 페이지, AI 초안을 모두 보존한다. Markdown export는 위키 본문과 Source Library를 함께 제공한다.
 - **Non-goals for MVP**: 계정 동기화, 서버 백엔드, 협업 편집, 자동 백그라운드 AI 실행, 텔레메트리는 포함하지 않는다.
 
@@ -110,13 +112,11 @@ yyoink-wiki는 수집과 분류를 **수집하는 순간**에 동시에 처리�
 - **가져오기 (P1)**: JSON 복원, TXT/MD 줄 단위 생성.
 - **검색 (P0)**: 실시간 텍스트 검색 (Debounce 적용).
 
-### 5.5 AI 기반 개인 위키
-- **위키 생성 (P0)**: 선택된 토픽의 Source들을 근거로 WikiPage 초안을 생성한다.
-- **위키 업데이트 (P0)**: 새 Source가 추가된 경우 기존 WikiPage와 Source를 함께 전달해 업데이트 초안을 생성한다.
-- **초안 검토 (P0)**: AI 결과는 바로 반영하지 않고, 사용자가 초안 모달에서 승인하거나 거절한다.
-- **토픽 질문 (P1)**: 현재 토픽의 Source와 WikiPage를 근거로 질문하고 답변을 받을 수 있다.
-- **AI 설정 (P0)**: 사용자가 OpenAI API key와 모델명을 로컬 설정에 저장할 수 있다.
-- **실패 보존 (P1)**: API key 없음, 네트워크 오류, JSON 파싱 실패는 실패 Draft로 저장해 사용자가 원인을 볼 수 있어야 한다.
+### 5.5 Prompt Pack + Evidence Finder
+- **수동 Wiki 편집 (P0)**: API key 없이 Topic Wiki를 Markdown으로 작성/수정한다.
+- **Prompt Pack 복사 (P0)**: 현재 Topic, WikiPage, Source Library, 선택 질문을 ChatGPT/Claude에 붙여넣기 좋은 텍스트로 클립보드에 복사한다.
+- **로컬 근거 검색 (P0)**: `Ask`는 질문 키워드로 현재 Topic의 WikiPage와 Sources를 검색하고 관련 excerpt와 출처 링크를 보여준다.
+- **Advanced Cloud AI (P1)**: OpenAI API key를 입력한 사용자는 Cloud Generate/Update와 Draft Review를 선택적으로 사용할 수 있다.
 
 ---
 
@@ -280,14 +280,15 @@ interface Settings {
 | `OPEN_CREATE_PROJECT` | Background → Sidepanel | `{ text, tabInfo }` | 새 프로젝트 생성 모달 열기 |
 | `GET_PAGE_TEXT` | Sidepanel → Background | - | 페이지 캡처 요청 |
 | `GET_PAGE_INFO` | Sidepanel → Background | - | 현재 탭 정보 요청 |
-| `RUN_AI_ACTION` | Sidepanel → Background | `{ action, topicId, topic, sources, wikiPage }` | OpenAI 초안/답변 생성 |
+| `RUN_AI_ACTION` | Sidepanel → Background | `{ action, topicId, topic, sources, wikiPage }` | 선택적 OpenAI Cloud 초안 생성 |
 | `REFRESH_MENUS` | Sidepanel → Background | - | 컨텍스트 메뉴 갱신 |
 
 ### 6.6 기술 스택
 - **Runtime**: Chrome Extension Manifest V3
 - **Frontend**: Vanilla JavaScript, CSS Variables
 - **Storage**: IndexedDB(`topics`, `sources`, `wikiPages`, `aiDrafts`) + `chrome.storage.local`(settings/API key)
-- **AI**: OpenAI Responses API, user-provided API key, default model `gpt-5-mini`
+- **Default AI Assist**: local Prompt Pack builder and Evidence Finder, no API key required
+- **Advanced Cloud AI**: optional OpenAI Responses API, user-provided API key, default model `gpt-5-mini`
 - **Typography**: Google Fonts (Inter)
 - **Icons**: Google Favicon API
 
@@ -389,8 +390,8 @@ Container
 | 클립보드 비어 있음 | 빈 값 체크 | "Clipboard is empty" |
 | 선택된 텍스트 없음 | 빈 값 체크 | "No text selected" |
 | 잘못된 가져오기 파일 | JSON.parse 예외 처리 | "Error importing file" |
-| OpenAI API key 없음 | 실패 Draft 생성 | "OpenAI API key required" |
-| AI 응답 JSON 파싱 실패 | 실패 Draft 생성 | Draft review에서 에러 표시 |
+| OpenAI API key 없음 | Cloud 기능만 실패 Draft 생성 | "OpenAI API key required" |
+| AI 응답 JSON 파싱 실패 | Cloud 기능만 실패 Draft 생성 | Draft review에서 에러 표시 |
 | 파비콘 로드 실패 | onerror 핸들러 | 파비콘 숨김 처리 |
 | DOM 복제 실패 | document.body 폴백 | (자동 처리) |
 
@@ -439,8 +440,9 @@ Container
 
 ### 11.2 데이터 보안
 - Source, Topic, WikiPage, AIDraft는 IndexedDB에 로컬 저장된다.
-- 설정과 OpenAI API key는 `chrome.storage.local`에 로컬 저장된다.
-- AI 기능은 기본 비활성 상태이며, 사용자가 Generate/Update/Ask를 실행할 때 선택된 토픽 자료만 OpenAI API로 전송된다.
+- 설정과 선택적 OpenAI API key는 `chrome.storage.local`에 로컬 저장된다.
+- 기본 Wiki/Ask/Prompt Pack 기능은 외부 AI를 호출하지 않는다.
+- 사용자가 Advanced Cloud AI의 Cloud Generate/Update를 실행할 때만 선택된 토픽 자료가 OpenAI API로 전송된다.
 - Content Security Policy (CSP) 준수: 인라인 스크립트 금지.
 - 텔레메트리, 계정 동기화, 제품 분석 이벤트 전송은 없음.
 
@@ -449,7 +451,7 @@ Container
 |--------|------|-------------|
 | Google Fonts | Inter 폰트 로드 | 익명 요청 |
 | Google Favicon API | 웹사이트 아이콘 | 도메인명만 전송 |
-| OpenAI Responses API | 사용자가 실행한 위키 생성/업데이트/질문 | 선택된 토픽의 Source/WikiPage와 사용자 질문 |
+| OpenAI Responses API | 사용자가 실행한 선택적 Cloud Generate/Update | 선택된 토픽의 Source/WikiPage |
 
 ---
 
@@ -492,7 +494,8 @@ Container
 - [ ] 우클릭 메뉴 프로젝트별 저장 동작 확인
 - [ ] Bypass 모드 활성화 후 드래그 금지 사이트 동작 확인
 - [ ] 강력 모드(JS 차단) 활성화 및 해제 확인
-- [ ] OpenAI API key 저장 후 위키 생성, 초안 검토, 승인 확인
+- [ ] API key 없이 Edit Wiki, Find Evidence, Copy Prompt Pack 확인
+- [ ] OpenAI API key 저장 후 선택적 Cloud Generate, 초안 검토, 승인 확인
 - [ ] JSON v2 export/import 후 Source, WikiPage, AIDraft 보존 확인
 - [ ] 다크/라이트 테마 전환 시 UI 가독성 확인
 - [ ] 대량 데이터(100개 이상) 검색 성능 확인

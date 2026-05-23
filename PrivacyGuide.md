@@ -12,8 +12,9 @@ yyoink-wiki는 웹에서 선택한 텍스트와 메모를 수집해 주제별 �
 
 - **Source**: 사용자가 웹 페이지, 클립보드, 메모에서 직접 저장한 텍스트
 - **Topic**: 사용자가 생성한 주제 이름, 설명, 색상
-- **WikiPage 및 AI Draft**: 사용자가 실행한 AI 기능의 초안, 승인된 위키 본문, 출처 연결 정보
-- **설정**: 테마, 활성 Topic, 사용자가 직접 입력한 OpenAI API key 및 모델명
+- **WikiPage 및 Prompt Pack**: 사용자가 작성한 위키 본문과 클립보드로 복사하는 프롬프트 패키지
+- **AI Draft**: 사용자가 선택적 Cloud AI 기능을 실행한 경우의 초안과 출처 연결 정보
+- **설정**: 테마, 활성 Topic, 사용자가 직접 입력한 선택적 OpenAI API key 및 모델명
 
 ### 수집하지 않는 정보
 
@@ -24,19 +25,21 @@ yyoink-wiki는 웹에서 선택한 텍스트와 메모를 수집해 주제별 �
 
 ## 데이터 저장
 
-Source, Topic, WikiPage, AI Draft는 브라우저의 IndexedDB에 저장됩니다. 설정과 OpenAI API key는 Chrome의 로컬 저장소(`chrome.storage.local`)에 저장됩니다.
+Source, Topic, WikiPage, AI Draft는 브라우저의 IndexedDB에 저장됩니다. 설정과 선택적 OpenAI API key는 Chrome의 로컬 저장소(`chrome.storage.local`)에 저장됩니다.
 
 - **기본 로컬 저장**: 수집 자료는 기본적으로 사용자의 기기에 저장됩니다.
 - **클라우드 동기화 없음**: 별도의 클라우드 서버에 동기화되지 않습니다.
 - **제3자 공유 없음**: yyoink-wiki는 데이터를 판매하거나 제품 분석 목적으로 공유하지 않습니다.
 
-## AI 기능
+## Prompt Pack 및 AI 기능
 
-AI 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고 `Generate Wiki`, `Update Wiki`, 또는 `Ask`를 직접 실행할 때만 선택된 Topic의 Source, WikiPage, 질문 내용이 OpenAI API로 전송됩니다.
+기본 Wiki, Ask, Prompt Pack 기능은 API key 없이 로컬에서 동작합니다. Prompt Pack은 사용자가 직접 ChatGPT/Claude 같은 구독형 AI 웹앱에 붙여넣을 수 있도록 클립보드에 복사됩니다.
 
-- yyoink-wiki는 자체 서버를 운영하지 않으며 AI 요청은 사용자의 브라우저에서 OpenAI API로 직접 전송됩니다.
+OpenAI Cloud 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고 `Cloud Generate` 또는 `Cloud Update`를 직접 실행할 때만 선택된 Topic의 Source와 WikiPage가 OpenAI API로 전송됩니다.
+
+- yyoink-wiki는 자체 서버를 운영하지 않으며 Cloud AI 요청은 사용자의 브라우저에서 OpenAI API로 직접 전송됩니다.
 - API key는 사용자의 기기에 로컬 저장됩니다.
-- AI 응답은 Draft로 저장되며, 사용자가 승인하기 전에는 WikiPage에 반영되지 않습니다.
+- Cloud AI 응답은 Draft로 저장되며, 사용자가 승인하기 전에는 WikiPage에 반영되지 않습니다.
 - OpenAI로 전송된 데이터는 OpenAI의 개인정보 및 데이터 처리 정책의 적용을 받습니다.
 
 ## 권한 (Permissions)
@@ -53,9 +56,9 @@ AI 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고
 
 - **Google Fonts**: Inter 폰트 로드
 - **Google Favicon Service**: 웹사이트 아이콘(파비콘) 표시
-- **OpenAI API**: 사용자가 직접 실행한 AI 위키 생성, 업데이트, 질문 기능 처리
+- **OpenAI API**: 사용자가 직접 실행한 선택적 Cloud Wiki 생성/업데이트 처리
 
-위 서비스들은 각자의 개인정보 처리방침에 따라 데이터를 처리합니다. OpenAI API에는 위의 AI 기능 범위에 해당하는 선택 자료가 전송될 수 있습니다.
+위 서비스들은 각자의 개인정보 처리방침에 따라 데이터를 처리합니다. OpenAI API에는 위의 선택적 Cloud AI 기능 범위에 해당하는 자료가 전송될 수 있습니다.
 
 ## 데이터 제어
 
@@ -71,7 +74,7 @@ AI 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고
 
 ---
 
-_이 확장 프로그램은 사용자의 데이터를 판매하지 않으며, AI 기능은 사용자가 직접 실행한 경우에만 선택된 자료를 OpenAI API로 전송합니다._
+_이 확장 프로그램은 사용자의 데이터를 판매하지 않으며, 기본 Prompt Pack/Evidence Finder 기능은 외부 AI를 호출하지 않습니다._
 
 <br>
 <br>
@@ -90,8 +93,9 @@ yyoink-wiki is a Chrome extension that helps you collect selected text and notes
 
 - **Sources**: Text you choose to save from web pages, clipboard input, or notes
 - **Topics**: Topic names, descriptions, and colors you create
-- **WikiPages and AI Drafts**: AI drafts, approved wiki content, and source citation links created by actions you run
-- **Settings**: Theme, active topic, OpenAI API key, and model name you enter
+- **WikiPages and Prompt Packs**: Wiki content you write and prompt packages copied to your clipboard
+- **AI Drafts**: Drafts and citation links created only when you run optional Cloud AI actions
+- **Settings**: Theme, active topic, optional OpenAI API key, and model name you enter
 
 ### What We Do NOT Collect
 
@@ -102,19 +106,21 @@ yyoink-wiki is a Chrome extension that helps you collect selected text and notes
 
 ## Data Storage
 
-Sources, Topics, WikiPages, and AI Drafts are stored locally in browser IndexedDB. Settings and your OpenAI API key are stored in Chrome local storage (`chrome.storage.local`).
+Sources, Topics, WikiPages, and AI Drafts are stored locally in browser IndexedDB. Settings and your optional OpenAI API key are stored in Chrome local storage (`chrome.storage.local`).
 
 - **Local by default**: Your collected material is stored on your device by default
 - **No cloud sync**: Data is not synced across devices
 - **No third-party sharing for analytics**: yyoink-wiki does not sell your data or share it for product analytics
 
-## AI Features
+## Prompt Pack and AI Features
 
-AI features are optional. When you enter an OpenAI API key and explicitly run `Generate Wiki`, `Update Wiki`, or `Ask`, the selected Topic's Sources, WikiPage, and your question are sent to the OpenAI API.
+The default Wiki, Ask, and Prompt Pack features run locally without an API key. Prompt Packs are copied to your clipboard so you can paste them into subscription AI web apps such as ChatGPT or Claude yourself.
 
-- yyoink-wiki does not run its own server; AI requests are sent directly from your browser to OpenAI.
+OpenAI Cloud features are optional. When you enter an OpenAI API key and explicitly run `Cloud Generate` or `Cloud Update`, the selected Topic's Sources and WikiPage are sent to the OpenAI API.
+
+- yyoink-wiki does not run its own server; Cloud AI requests are sent directly from your browser to OpenAI.
 - Your API key is stored locally on your device.
-- AI responses are saved as Drafts and are not applied to WikiPages until you approve them.
+- Cloud AI responses are saved as Drafts and are not applied to WikiPages until you approve them.
 - Data sent to OpenAI is governed by OpenAI's privacy and data processing policies.
 
 ## Permissions
@@ -131,9 +137,9 @@ AI features are optional. When you enter an OpenAI API key and explicitly run `G
 
 - **Google Fonts**: Used to load the Inter font family
 - **Google Favicon Service**: Used to display website icons
-- **OpenAI API**: Used only for AI wiki generation, updates, and topic questions you run
+- **OpenAI API**: Used only for optional Cloud wiki generation and updates you run
 
-These services process data under their own privacy policies. OpenAI may receive the selected material described in the AI Features section above.
+These services process data under their own privacy policies. OpenAI may receive the selected material described in the optional Cloud AI section above.
 
 ## Data Control
 
@@ -149,4 +155,4 @@ For privacy concerns, please open an issue on our GitHub repository.
 
 ---
 
-_This extension does not sell your data. AI features transmit selected material to OpenAI only when you explicitly run them._
+_This extension does not sell your data. The default Prompt Pack and Evidence Finder features do not call external AI services._

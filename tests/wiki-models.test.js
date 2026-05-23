@@ -5,9 +5,12 @@ const {
   createId,
   normalizeProjectToTopic,
   normalizeSnippetToSource,
+  createManualWikiPage,
   createWikiPageFromDraft,
   deriveTopicStatus,
   filterSources,
+  searchTopicEvidence,
+  buildPromptPack,
   buildExportPayload,
 } = require("../shared/wiki-models.js");
 
@@ -116,6 +119,35 @@ test("createWikiPageFromDraft requires approved generate or update draft", () =>
   );
 });
 
+test("createManualWikiPage creates and updates local wiki pages", () => {
+  const topic = { id: "t1", title: "Local AI" };
+  const now = "2026-05-23T00:00:00.000Z";
+  const page = createManualWikiPage({
+    topic,
+    existingPage: null,
+    bodyMarkdown: "# Local AI\n\nEvidence notes",
+    sourceIds: ["s1", "s1", "s2"],
+    now,
+  });
+
+  assert.equal(page.topicId, "t1");
+  assert.equal(page.title, "Local AI");
+  assert.equal(page.summary, "Local AI");
+  assert.deepEqual(page.sourceIds, ["s1", "s2"]);
+  assert.equal(page.createdAt, now);
+
+  const updated = createManualWikiPage({
+    topic,
+    existingPage: page,
+    bodyMarkdown: "Updated notes",
+    sourceIds: ["s3"],
+    now: "2026-05-24T00:00:00.000Z",
+  });
+  assert.equal(updated.id, page.id);
+  assert.equal(updated.createdAt, now);
+  assert.equal(updated.updatedAt, "2026-05-24T00:00:00.000Z");
+});
+
 test("deriveTopicStatus reports wiki lifecycle states", () => {
   assert.equal(
     deriveTopicStatus({ wikiPage: null, sources: [], drafts: [], isGenerating: false }),
@@ -128,7 +160,7 @@ test("deriveTopicStatus reports wiki lifecycle states", () => {
       drafts: [],
       isGenerating: false,
     }),
-    "Ready to generate",
+    "Ready to write",
   );
   assert.equal(
     deriveTopicStatus({ wikiPage: null, sources: [], drafts: [], isGenerating: true }),
@@ -141,7 +173,7 @@ test("deriveTopicStatus reports wiki lifecycle states", () => {
       drafts: [],
       isGenerating: false,
     }),
-    "New sources available",
+    "Sources updated",
   );
   assert.equal(
     deriveTopicStatus({
@@ -150,7 +182,7 @@ test("deriveTopicStatus reports wiki lifecycle states", () => {
       drafts: [{ id: "d1", status: "ready" }],
       isGenerating: false,
     }),
-    "Draft ready",
+    "Cloud draft ready",
   );
 });
 
@@ -163,6 +195,58 @@ test("filterSources filters by topic and search term", () => {
   assert.equal(filterSources(sources, { topicId: "a", searchTerm: "" }).length, 1);
   assert.equal(filterSources(sources, { topicId: "all", searchTerm: "beta" }).length, 1);
   assert.equal(filterSources(sources, { topicId: "all", searchTerm: "missing" }).length, 0);
+});
+
+test("searchTopicEvidence finds local wiki and source matches", () => {
+  const results = searchTopicEvidence({
+    question: "retrieval citations",
+    wikiPage: {
+      id: "w1",
+      title: "RAG",
+      bodyMarkdown: "Retrieval needs citations from local evidence.",
+      updatedAt: "2026-05-23T00:00:00.000Z",
+    },
+    sources: [
+      {
+        id: "s1",
+        pageTitle: "Citation Guide",
+        domain: "example.com",
+        text: "Always attach citations to generated answers.",
+        sourceUrl: "https://example.com",
+      },
+      {
+        id: "s2",
+        pageTitle: "Unrelated",
+        text: "Nothing here",
+      },
+    ],
+  });
+
+  assert.deepEqual(results.map((result) => result.id), ["w1", "s1"]);
+  assert.match(results[0].excerpt, /Retrieval/i);
+});
+
+test("buildPromptPack formats topic wiki and source library for subscription AI", () => {
+  const prompt = buildPromptPack({
+    topic: { id: "t1", title: "RAG" },
+    wikiPage: { bodyMarkdown: "# RAG\n\nUse local sources." },
+    sources: [
+      {
+        id: "s1",
+        type: "selection",
+        pageTitle: "Guide",
+        sourceUrl: "https://example.com",
+        createdAt: "2026-05-23T00:00:00.000Z",
+        text: "Citation evidence",
+      },
+    ],
+    question: "What matters?",
+  });
+
+  assert.match(prompt, /yyoink-wiki Prompt Pack/);
+  assert.match(prompt, /What matters\?/);
+  assert.match(prompt, /\[s1\] Guide/);
+  assert.match(prompt, /Citation evidence/);
 });
 
 test("buildExportPayload includes topics sources wiki pages and drafts", () => {

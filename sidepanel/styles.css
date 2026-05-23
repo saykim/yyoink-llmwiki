@@ -447,6 +447,12 @@ body {
   margin-top: 10px;
 }
 
+.ask-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .draft-meta {
   margin-top: 10px;
   color: var(--text-muted);
@@ -470,6 +476,45 @@ body {
 .ask-message-assistant {
   background: var(--bg-elevated);
   color: var(--text-primary);
+}
+
+.ask-message-evidence {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.evidence-result {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.evidence-result:last-child {
+  border-bottom: 0;
+}
+
+.evidence-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.evidence-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.evidence-excerpt {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.settings-note {
+  margin: 0 0 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .project-selector-trigger {
