@@ -349,7 +349,7 @@ body {
 /* ==================== PROJECT SELECTOR ==================== */
 .project-selector {
   position: relative;
-  z-index: 50;
+  z-index: 300;
   margin-bottom: 10px; /* project → quick 간격 */
 }
 
@@ -550,9 +550,10 @@ body {
 /* Dropdown Menu */
 .project-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
+  z-index: 400;
   background: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
@@ -719,7 +720,7 @@ body {
   gap: 6px; /* 8px → 6px (콤팩트) */
   align-items: center;
   position: relative;
-  z-index: 100;
+  z-index: 20;
   margin-bottom: 10px; /* quick → search 간격 */
 }
 
