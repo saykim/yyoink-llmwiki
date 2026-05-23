@@ -1487,18 +1487,21 @@ function saveNewProject() {
 
 // Export Functions
 function handleExport(format) {
-  let filteredSnippets =
-    selectedProjectId === "all"
-      ? snippets
-      : snippets.filter((s) => s.projectId === selectedProjectId);
+  const exportPayload = YyoinkWiki.models.buildExportPayload({
+    topics,
+    sources,
+    wikiPages,
+    aiDrafts,
+    topicId: selectedProjectId,
+  });
 
-  let filteredProjects =
-    selectedProjectId === "all"
-      ? projects
-      : projects.filter((p) => p.id === selectedProjectId);
+  const hasExportableData =
+    exportPayload.sources.length > 0 ||
+    exportPayload.wikiPages.length > 0 ||
+    exportPayload.aiDrafts.length > 0;
 
-  if (filteredSnippets.length === 0) {
-    showToast("No snippets to export");
+  if (!hasExportableData) {
+    showToast("No data to export");
     return;
   }
 
@@ -1506,22 +1509,26 @@ function handleExport(format) {
 
   switch (format) {
     case "json":
-      content = JSON.stringify(
-        { projects: filteredProjects, snippets: filteredSnippets },
-        null,
-        2,
-      );
-      filename = "yyoink-export.json";
+      content = JSON.stringify(exportPayload, null, 2);
+      filename = "yyoink-wiki-export.json";
       mimeType = "application/json";
       break;
     case "txt":
-      content = exportAsTxt(filteredSnippets, filteredProjects);
+      content = exportAsTxt(
+        exportPayload.sources,
+        exportPayload.topics,
+        exportPayload.wikiPages,
+      );
       filename = "yyoink-export.txt";
       mimeType = "text/plain";
       break;
     case "md":
-      content = exportAsMd(filteredSnippets, filteredProjects);
-      filename = "yyoink-export.md";
+      content = exportAsMd(
+        exportPayload.sources,
+        exportPayload.topics,
+        exportPayload.wikiPages,
+      );
+      filename = "yyoink-wiki-export.md";
       mimeType = "text/markdown";
       break;
   }
@@ -1531,36 +1538,62 @@ function handleExport(format) {
   showToast(`Exported as ${format.toUpperCase()}!`);
 }
 
-function exportAsTxt(snippetList, projectsList) {
+function exportAsTxt(snippetList, projectsList, wikiPageList = []) {
   return projectsList
     .map((project) => {
       const projectSnippets = snippetList.filter(
-        (s) => s.projectId === project.id,
+        (s) => (s.topicId || s.projectId) === project.id,
       );
-      if (projectSnippets.length === 0) return "";
-      return `[${project.name}]\n---\n\n${projectSnippets
-        .map((s) => `${s.text}\nSource: ${s.sourceUrl}\n`)
-        .join("\n")}\n`;
+      const wikiPage = wikiPageList.find((page) => page.topicId === project.id);
+      if (projectSnippets.length === 0 && !wikiPage) return "";
+
+      let output = `[${project.title || project.name}]\n---\n\n`;
+
+      if (wikiPage?.bodyMarkdown) {
+        output += `Wiki:\n${wikiPage.bodyMarkdown.trim()}\n\n`;
+      }
+
+      if (projectSnippets.length > 0) {
+        output += `Sources:\n\n${projectSnippets
+          .map((s) => `${s.text}\nSource: ${s.sourceUrl || "Unknown"}\n`)
+          .join("\n")}\n`;
+      }
+
+      return output;
     })
     .filter(Boolean)
     .join("\n")
     .trim();
 }
 
-function exportAsMd(snippetList, projectsList) {
-  let output = "# yyoink Export\n\n";
+function exportAsMd(snippetList, projectsList, wikiPageList = []) {
+  let output = "# yyoink Wiki Export\n\n";
   projectsList.forEach((project) => {
     const projectSnippets = snippetList.filter(
-      (s) => s.projectId === project.id,
+      (s) => (s.topicId || s.projectId) === project.id,
     );
-    if (projectSnippets.length === 0) return;
-    output += `## ${project.name}\n\n`;
+    const wikiPage = wikiPageList.find((page) => page.topicId === project.id);
+
+    if (projectSnippets.length === 0 && !wikiPage) return;
+
+    output += `## ${project.title || project.name}\n\n`;
+
+    if (wikiPage?.bodyMarkdown) {
+      output += `### Wiki\n\n${wikiPage.bodyMarkdown.trim()}\n\n`;
+    }
+
+    if (projectSnippets.length > 0) {
+      output += "### Source Library\n\n";
+    }
+
     projectSnippets.forEach((s, i) => {
-      output += `### Snippet ${i + 1}\n\n> ${s.text
+      const sourceTitle = s.pageTitle || s.domain || "Source";
+      const sourceLine = s.sourceUrl
+        ? `*Source: [${sourceTitle}](${s.sourceUrl})*`
+        : `*Source: ${sourceTitle}*`;
+      output += `#### Source ${i + 1}\n\n> ${s.text
         .split("\n")
-        .join("\n> ")}\n\n*Source: [${s.pageTitle || s.domain}](${
-        s.sourceUrl
-      })*\n\n`;
+        .join("\n> ")}\n\n${sourceLine}\n\n`;
     });
     output += "---\n\n";
   });
@@ -1581,8 +1614,50 @@ async function handleImport(e) {
 
     if (ext === "json") {
       const data = JSON.parse(text);
-      importedSnippets = data.snippets || [];
-      importedProjects = data.projects || [];
+
+      if (data.version === 2) {
+        topics = (data.topics || []).map((topic) =>
+          YyoinkWiki.models.normalizeProjectToTopic(topic),
+        );
+        sources = (data.sources || []).map((source) =>
+          YyoinkWiki.models.normalizeSnippetToSource(source),
+        );
+        wikiPages = data.wikiPages || [];
+        aiDrafts = data.aiDrafts || [];
+
+        if (topics.length === 0) {
+          topics = [
+            YyoinkWiki.models.normalizeProjectToTopic({
+              id: "default",
+              name: "Default",
+              color: "#6366f1",
+              createdAt: new Date().toISOString(),
+            }),
+          ];
+        }
+
+        selectedProjectId = "all";
+        await saveData();
+        renderProjectDropdown();
+        renderSnippets();
+        renderWikiPanel();
+        chrome.runtime.sendMessage({ type: "REFRESH_MENUS" }, () => {
+          if (chrome.runtime.lastError) {
+            console.log(
+              "Could not refresh context menus:",
+              chrome.runtime.lastError.message,
+            );
+          }
+        });
+        showToast(
+          `Imported ${sources.length} sources and ${wikiPages.length} wiki pages!`,
+        );
+        e.target.value = "";
+        return;
+      }
+
+      importedSnippets = data.snippets || data.sources || [];
+      importedProjects = data.projects || data.topics || [];
     } else {
       const blocks = text.split(/\n{2,}/).filter((b) => b.trim());
       blocks.forEach((block) => {
@@ -1602,21 +1677,31 @@ async function handleImport(e) {
 
     const existingIds = new Set(projects.map((p) => p.id));
     importedProjects.forEach((p) => {
-      if (!existingIds.has(p.id)) projects.push(p);
+      const topic = YyoinkWiki.models.normalizeProjectToTopic(p);
+      if (!existingIds.has(topic.id)) {
+        projects.push(topic);
+        existingIds.add(topic.id);
+      }
     });
 
     importedSnippets.forEach((s) => {
-      const exists = projects.find((p) => p.id === s.projectId);
+      const source = YyoinkWiki.models.normalizeSnippetToSource(s);
+      const fallbackTopicId = projects[0]?.id || "default";
+      const targetTopicId = projects.find((p) => p.id === source.topicId)
+        ? source.topicId
+        : fallbackTopicId;
       snippets.unshift({
-        ...s,
-        id: generateId(),
-        projectId: exists ? s.projectId : "default",
+        ...source,
+        id: YyoinkWiki.models.createId("source"),
+        topicId: targetTopicId,
+        projectId: targetTopicId,
       });
     });
 
-    saveData();
+    await saveData();
     renderProjectDropdown();
     renderSnippets();
+    renderWikiPanel();
     showToast(`Imported ${importedSnippets.length} snippets!`);
   } catch {
     showToast("Error importing file");
