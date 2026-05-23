@@ -1,6 +1,6 @@
 # yyoink - Product Requirements Document (PRD) v3.0
 
-> **최종 통합 및 개발자용 상세 PRD** | 작성일: 2026-01-25
+> **최종 통합 및 개발자용 상세 PRD** | 작성일: 2026-05-23
 
 ---
 
@@ -13,13 +13,23 @@
 v3.0.0 (Developer-Ready)
 
 ### 1.3 한 줄 설명
-> **"웹에서 무엇이든 가져가세요 - 복사 방지 우회, 스니펫 수집, 프로젝트별 정리"**
+> **"웹에서 수집한 근거 자료를 주제별 개인 LLM 위키로 정리하세요"**
 
 ### 1.4 핵심 가치 제안
 - **간편한 수집**: 우클릭 한 번으로 선택한 텍스트 즉시 저장
-- **프로젝트 정리**: 색상 코드가 있는 프로젝트로 스니펫 분류
+- **주제별 정리**: 색상 코드가 있는 토픽으로 소스 자료 분류
+- **근거 기반 위키**: 저장한 소스를 바탕으로 AI 초안을 만들고 사용자가 승인한 내용만 위키에 반영
 - **복사 방지 해제**: 복사가 막힌 웹사이트에서도 텍스트 추출 가능
-- **프라이버시**: 모든 데이터는 로컬에만 저장 (서버 전송 없음)
+- **프라이버시 우선**: 데이터는 기본적으로 로컬에 저장되며, AI 기능은 사용자가 명시적으로 실행할 때만 선택한 토픽 자료를 전송
+
+### 1.5 Personal LLM Wiki MVP Direction
+- **목표**: yyoink를 단순 스니펫 저장소에서 "출처가 붙은 개인 연구 위키"로 전환한다.
+- **Source Records**: 선택 영역, 페이지 캡처, 메모, 클립보드 입력을 모두 `Source`로 저장하고 토픽에 연결한다.
+- **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Ask` 탭을 제공하며 같은 토픽 안에서 수집, 요약, 질의응답을 이어갈 수 있어야 한다.
+- **AI Draft Workflow**: `Generate Wiki`와 `Update Wiki`는 OpenAI Responses API를 호출해 JSON 초안을 만들고, 사용자가 검토/승인한 초안만 `WikiPage`가 된다.
+- **Grounded Ask**: 사용자는 현재 토픽의 소스와 승인된 위키 본문을 근거로 질문할 수 있고, 답변은 관련 출처를 참조해야 한다.
+- **Portability**: JSON export는 `version: 2` 형식으로 토픽, 소스, 위키 페이지, AI 초안을 모두 보존한다. Markdown export는 위키 본문과 Source Library를 함께 제공한다.
+- **Non-goals for MVP**: 계정 동기화, 서버 백엔드, 협업 편집, 자동 백그라운드 AI 실행, 텔레메트리는 포함하지 않는다.
 
 ---
 
@@ -96,9 +106,17 @@ yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며,
 - **이미지 복원 (P2)**: 네이버 블로그 등 블러 처리된 이미지 URL 수정.
 
 ### 5.4 데이터 관리
-- **내보내기 (P0)**: JSON(백업), Markdown(활용), Plain Text.
+- **내보내기 (P0)**: JSON v2(전체 백업), Markdown(위키 본문 + Source Library), Plain Text.
 - **가져오기 (P1)**: JSON 복원, TXT/MD 줄 단위 생성.
 - **검색 (P0)**: 실시간 텍스트 검색 (Debounce 적용).
+
+### 5.5 AI 기반 개인 위키
+- **위키 생성 (P0)**: 선택된 토픽의 Source들을 근거로 WikiPage 초안을 생성한다.
+- **위키 업데이트 (P0)**: 새 Source가 추가된 경우 기존 WikiPage와 Source를 함께 전달해 업데이트 초안을 생성한다.
+- **초안 검토 (P0)**: AI 결과는 바로 반영하지 않고, 사용자가 초안 모달에서 승인하거나 거절한다.
+- **토픽 질문 (P1)**: 현재 토픽의 Source와 WikiPage를 근거로 질문하고 답변을 받을 수 있다.
+- **AI 설정 (P0)**: 사용자가 OpenAI API key와 모델명을 로컬 설정에 저장할 수 있다.
+- **실패 보존 (P1)**: API key 없음, 네트워크 오류, JSON 파싱 실패는 실패 Draft로 저장해 사용자가 원인을 볼 수 있어야 한다.
 
 ---
 
@@ -119,14 +137,15 @@ yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며,
 │  │  • 사용자 인터랙션│                            │ • 초기화       │ │
 │  └────────┬─────────┘                            └───────┬────────┘ │
 │           │                                              │          │
-│           │              ┌────────────────┐              │          │
-│           └─────────────►│ Chrome Storage │◄─────────────┘          │
-│                          │    (Local)     │                         │
-│                          │                │                         │
-│                          │ • snippets[]   │                         │
-│                          │ • projects[]   │                         │
-│                          │ • settings     │                         │
-│                          └────────────────┘                         │
+│           │              ┌─────────────────────┐          │          │
+│           └─────────────►│ Local Data Layer     │◄─────────┘          │
+│                          │ IndexedDB + storage  │                     │
+│                          │ • topics             │                     │
+│                          │ • sources            │                     │
+│                          │ • wikiPages          │                     │
+│                          │ • aiDrafts           │                     │
+│                          │ • settings/API key   │                     │
+│                          └─────────────────────┘                     │
 │                                                                      │
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │                      Content Script                           │   │
@@ -146,11 +165,21 @@ yyoink는 수집과 분류를 **수집하는 순간**에 동시에 처리하며,
 context_pilot/
 ├── manifest.json           # 확장 프로그램 설정 (Manifest V3)
 ├── background.js           # 서비스 워커 (컨텍스트 메뉴, 메시지 처리)
+├── background/
+│   └── ai-service.js       # OpenAI Responses API 호출 및 Draft 저장
 ├── content.js              # 콘텐츠 스크립트 (복사 해제, 텍스트 추출)
+├── shared/
+│   ├── wiki-models.js      # Topic/Source/WikiPage 모델 유틸
+│   ├── ai-contract.js      # AI 요청/응답 JSON 계약
+│   ├── idb-repository.js   # IndexedDB 저장소 계층
+│   └── migration.js        # legacy storage -> IndexedDB 마이그레이션
 ├── sidepanel/
 │   ├── index.html          # 사이드 패널 UI 구조
-│   ├── main.js             # 사이드 패널 로직 (1,223 lines)
-│   └── styles.css          # 디자인 시스템 (1,917 lines)
+│   ├── main.js             # 사이드 패널 로직
+│   └── styles.css          # 디자인 시스템
+├── tests/
+│   ├── ai-contract.test.js
+│   └── wiki-models.test.js
 ├── icons/
 │   ├── icon16.png
 │   ├── icon32.png
@@ -163,26 +192,60 @@ context_pilot/
 
 ### 6.3 데이터 모델 (TypeScript Interfaces)
 ```typescript
-interface Snippet {
-  id: string;           // 고유 ID (timestamp + random)
-  text: string;         // 저장된 텍스트 내용
-  sourceUrl: string;    // 출처 URL
-  pageTitle: string;    // 페이지 제목
-  domain: string;       // 도메인 (예: "github.com")
-  projectId: string;    // 소속 프로젝트 ID
-  createdAt: string;    // ISO 8601 형식 생성 시각
+interface Topic {
+  id: string;
+  title: string;
+  name: string;          // legacy UI alias
+  description: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface Project {
-  id: string;           // 고유 ID ("default" 또는 생성된 ID)
-  name: string;         // 프로젝트 이름
-  color: string;        // HEX 색상 코드 (예: "#6366f1")
-  createdAt: string;    // ISO 8601 형식 생성 시각
+interface Source {
+  id: string;
+  topicId: string;
+  projectId: string;     // legacy UI alias
+  type: "selection" | "page" | "memo" | "clipboard" | "import";
+  text: string;
+  sourceUrl: string;
+  pageTitle: string;
+  domain: string;
+  aiStatus: "raw" | "processed" | "stale";
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface WikiPage {
+  id: string;
+  topicId: string;
+  title: string;
+  bodyMarkdown: string;
+  summary: string;
+  keyQuestions: string[];
+  sourceIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AIDraft {
+  id: string;
+  topicId: string;
+  type: "generateWiki" | "updateWiki" | "ask";
+  status: "ready" | "approved" | "rejected" | "failed";
+  proposedWikiMarkdown: string;
+  generatedSummary: string;
+  sourceCitations: Array<{ sourceId: string; quote: string }>;
+  followUpQuestions: string[];
+  error?: string;
+  createdAt: string;
 }
 
 interface Settings {
-  theme: "auto" | "light" | "dark";  // 테마 설정
-  activeProjectId: string;            // 현재 활성 프로젝트
+  theme: "auto" | "light" | "dark";
+  activeTopicId: string;
+  openaiApiKey?: string;  // chrome.storage.local에 로컬 저장
+  openaiModel?: string;
 }
 ```
 
@@ -212,16 +275,19 @@ interface Settings {
 #### 6.5.2 Background ↔ Sidepanel
 | 메시지 타입 | 방향 | 페이로드 | 설명 |
 |-------------|------|----------|------|
-| `SNIPPET_ADDED` | Background → Sidepanel | `{ snippet }` | 컨텍스트 메뉴로 저장 시 UI 업데이트 |
+| `SOURCE_ADDED` | Background → Sidepanel | `{ source }` | 컨텍스트 메뉴로 저장 시 UI 업데이트 |
+| `SNIPPET_ADDED` | Background → Sidepanel | `{ snippet }` | legacy 호환 메시지 |
 | `OPEN_CREATE_PROJECT` | Background → Sidepanel | `{ text, tabInfo }` | 새 프로젝트 생성 모달 열기 |
 | `GET_PAGE_TEXT` | Sidepanel → Background | - | 페이지 캡처 요청 |
 | `GET_PAGE_INFO` | Sidepanel → Background | - | 현재 탭 정보 요청 |
+| `RUN_AI_ACTION` | Sidepanel → Background | `{ action, topicId, topic, sources, wikiPage }` | OpenAI 초안/답변 생성 |
 | `REFRESH_MENUS` | Sidepanel → Background | - | 컨텍스트 메뉴 갱신 |
 
 ### 6.6 기술 스택
 - **Runtime**: Chrome Extension Manifest V3
 - **Frontend**: Vanilla JavaScript, CSS Variables
-- **Storage**: `chrome.storage.local` (5MB limit)
+- **Storage**: IndexedDB(`topics`, `sources`, `wikiPages`, `aiDrafts`) + `chrome.storage.local`(settings/API key)
+- **AI**: OpenAI Responses API, user-provided API key, default model `gpt-5-mini`
 - **Typography**: Google Fonts (Inter)
 - **Icons**: Google Favicon API
 
@@ -266,10 +332,17 @@ Container
 │   ├── Force Select (Icon)
 │   ├── Memo (Icon)
 │   └── Paste (Icon)
-├── Search Bar (⌘K 단축키)
-├── Snippets Container
-│   ├── Empty State (스니펫 없을 때)
-│   └── Snippet Cards (동적 렌더링)
+├── Workspace Tabs
+│   ├── Sources
+│   │   ├── Search Bar (⌘K 단축키)
+│   │   └── Source Cards (동적 렌더링)
+│   ├── Wiki
+│   │   ├── Topic Status
+│   │   ├── Generate/Update/Review Actions
+│   │   └── Wiki Markdown Preview
+│   └── Ask
+│       ├── Topic-grounded answer thread
+│       └── Question input
 ├── Footer Actions
 │   ├── Snippet Count
 │   ├── Import Button
@@ -287,6 +360,7 @@ Container
 | `memoModal` | 퀵 메모 작성 |
 | `exportModal` | 내보내기 형식 선택 |
 | `settingsModal` | 테마 설정 |
+| `draftReviewModal` | AI 초안 검토 및 승인 |
 
 ---
 
@@ -294,7 +368,7 @@ Container
 
 | 권한 | 용도 | 필수 여부 |
 |------|------|-----------|
-| `storage` | 스니펫/프로젝트/설정 저장 | ✅ 필수 |
+| `storage` | 설정, AI key, legacy migration flag 저장 | ✅ 필수 |
 | `contextMenus` | 우클릭 메뉴 저장 옵션 | ✅ 필수 |
 | `activeTab` | 현재 탭 정보 접근 | ✅ 필수 |
 | `clipboardWrite` | 스니펫 복사 기능 | ✅ 필수 |
@@ -315,6 +389,8 @@ Container
 | 클립보드 비어 있음 | 빈 값 체크 | "Clipboard is empty" |
 | 선택된 텍스트 없음 | 빈 값 체크 | "No text selected" |
 | 잘못된 가져오기 파일 | JSON.parse 예외 처리 | "Error importing file" |
+| OpenAI API key 없음 | 실패 Draft 생성 | "OpenAI API key required" |
+| AI 응답 JSON 파싱 실패 | 실패 Draft 생성 | Draft review에서 에러 표시 |
 | 파비콘 로드 실패 | onerror 핸들러 | 파비콘 숨김 처리 |
 | DOM 복제 실패 | document.body 폴백 | (자동 처리) |
 
@@ -338,13 +414,17 @@ Container
 | 클립보드 붙여넣기 | "Pasted from clipboard!" | Success |
 | 내보내기 완료 | "Exported as FORMAT!" | Success |
 | 가져오기 완료 | "Imported N snippets!" | Success |
+| AI 설정 저장 | "AI settings saved" | Success |
+| AI 초안 준비 | "AI draft ready for review" | Success |
+| AI 초안 승인 | "Wiki updated" | Success |
+| AI 초안 거절 | "Draft rejected" | Info |
 | 테마 변경 | "Theme set to X" | Info |
 | Bypass 활성화 | "복사 잠금 해제 활성화 (길게 누르면 강력 모드)" | Info |
 | Bypass 비활성화 | "복사 잠금 해제 비활성화" | Info |
 | 강력 모드 활성화 | "강력 모드 활성화 - JS 비활성화됨" | Warning |
 | 강력 모드 해제 | "강력 모드 해제 - 페이지 새로고침" | Info |
 | 복사할 스니펫 없음 | "No snippets to copy" | Warning |
-| 내보낼 데이터 없음 | "No snippets to export" | Warning |
+| 내보낼 데이터 없음 | "No data to export" | Warning |
 | 메모 내용 비어 있음 | "Please write something" | Warning |
 | 프로젝트 이름 비어 있음 | "Please enter a project name" | Warning |
 | 스니펫 내용 비어 있음 | "Snippet text cannot be empty" | Warning |
@@ -358,23 +438,26 @@ Container
 - `innerHTML` 대신 `textContent` 사용 원칙.
 
 ### 11.2 데이터 보안
-- 모든 데이터는 `chrome.storage.local`에 저장되며 외부 서버로 전송되지 않음.
+- Source, Topic, WikiPage, AIDraft는 IndexedDB에 로컬 저장된다.
+- 설정과 OpenAI API key는 `chrome.storage.local`에 로컬 저장된다.
+- AI 기능은 기본 비활성 상태이며, 사용자가 Generate/Update/Ask를 실행할 때 선택된 토픽 자료만 OpenAI API로 전송된다.
 - Content Security Policy (CSP) 준수: 인라인 스크립트 금지.
-- 제3자 데이터 공유 없음.
+- 텔레메트리, 계정 동기화, 제품 분석 이벤트 전송은 없음.
 
 ### 11.3 외부 서비스 의존성
 | 서비스 | 용도 | 데이터 전송 |
 |--------|------|-------------|
 | Google Fonts | Inter 폰트 로드 | 익명 요청 |
 | Google Favicon API | 웹사이트 아이콘 | 도메인명만 전송 |
+| OpenAI Responses API | 사용자가 실행한 위키 생성/업데이트/질문 | 선택된 토픽의 Source/WikiPage와 사용자 질문 |
 
 ---
 
 ## 12. 저장소 제한 및 관리 (Storage)
 
-- **용량 제한**: `chrome.storage.local` 기본 5MB.
-- **스니펫 제한**: 개별 스니펫 당 최대 10,000자.
-- **한계 도달 전략 (TODO)**: 80% 도달 시 경고 알림, 오래된 스니펫 자동 삭제 옵션 검토 필요.
+- **용량 제한**: 주요 콘텐츠는 IndexedDB 브라우저 quota를 사용한다. 설정과 API key는 `chrome.storage.local`에 저장한다.
+- **Source 제한**: 개별 Source 입력은 최대 10,000자.
+- **한계 도달 전략 (TODO)**: 80% 도달 시 경고 알림, 오래된 Source 자동 삭제 옵션 검토 필요.
 
 ---
 
@@ -394,7 +477,8 @@ Container
 | 지표 | 정의 | 목표 |
 | :--- | :--- | :--- |
 | **DAU** | 일간 활성 사용자 (사이드 패널 오픈 기준) | - |
-| **Snippets Saved** | 총 저장된 스니펫 수 | - |
+| **Sources Saved** | 총 저장된 Source 수 | - |
+| **Wiki Pages Approved** | 승인된 WikiPage 수 | - |
 | **Retention** | 7일 후 재방문율 | - |
 | **Feature Usage** | Bypass, Export 등 주요 기능 사용 비율 | - |
 
@@ -408,10 +492,16 @@ Container
 - [ ] 우클릭 메뉴 프로젝트별 저장 동작 확인
 - [ ] Bypass 모드 활성화 후 드래그 금지 사이트 동작 확인
 - [ ] 강력 모드(JS 차단) 활성화 및 해제 확인
+- [ ] OpenAI API key 저장 후 위키 생성, 초안 검토, 승인 확인
+- [ ] JSON v2 export/import 후 Source, WikiPage, AIDraft 보존 확인
 - [ ] 다크/라이트 테마 전환 시 UI 가독성 확인
 - [ ] 대량 데이터(100개 이상) 검색 성능 확인
 
-### 15.2 호환성
+### 15.2 자동 테스트
+- `npm test`: wiki model normalization, export payload filtering, AI response contract validation.
+- `node --check`: sidepanel/background/shared scripts syntax validation.
+
+### 15.3 호환성
 - Chrome 88 이상 (Manifest V3 필수)
 - Windows / macOS / Linux Chrome 브라우저
 
@@ -431,8 +521,10 @@ Container
 
 ## 17. 용어 사전 (Glossary)
 
-- **Snippet**: 웹에서 수집하거나 직접 작성한 텍스트 조각.
-- **Project**: 스니펫을 분류하는 폴더 개념의 단위.
+- **Source**: 웹에서 수집하거나 직접 작성한 근거 텍스트 조각.
+- **Topic**: Source와 WikiPage를 묶는 주제 단위. 기존 UI의 Project와 호환된다.
+- **WikiPage**: 사용자가 승인한 AI 초안 또는 직접 관리하는 토픽별 위키 본문.
+- **AIDraft**: AI가 생성한 위키/답변 초안. 승인 전까지 WikiPage에 반영되지 않는다.
 - **Bypass**: 웹사이트의 복사 방지 기술을 우회하는 기능.
 - **Hardcore Mode**: JavaScript를 완전히 차단하여 강력하게 우회하는 모드.
 - **Side Panel**: 브라우저 우측에 고정되어 나타나는 UI 영역.
@@ -454,11 +546,12 @@ Container
 
 | 파일 | 라인 수 | 역할 |
 |------|---------|------|
-| `sidepanel/main.js` | 1,223 | 핵심 비즈니스 로직 |
-| `sidepanel/styles.css` | 1,917 | 디자인 시스템 |
-| `sidepanel/index.html` | 642 | UI 구조 |
-| `content.js` | 283 | 콘텐츠 스크립트 |
-| `background.js` | 207 | 서비스 워커 |
+| `sidepanel/main.js` | 변동 | 핵심 비즈니스 로직 |
+| `sidepanel/styles.css` | 변동 | 디자인 시스템 |
+| `sidepanel/index.html` | 변동 | UI 구조 |
+| `shared/*.js` | 변동 | 데이터 모델, 저장소, AI 계약 |
+| `background.js` | 변동 | 서비스 워커 |
+| `background/ai-service.js` | 변동 | AI 실행 서비스 |
 | `manifest.json` | 54 | 확장 프로그램 설정 |
 | **총계** | **4,326** | - |
 
