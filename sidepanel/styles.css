@@ -430,7 +430,7 @@ body {
 
 .wiki-actions {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
   min-width: 0;
@@ -450,31 +450,88 @@ body {
 
 #editWikiBtn,
 #copyPromptPackBtn {
-  grid-column: span 3;
   min-height: 42px;
   font-size: 13px;
 }
 
-#generateWikiBtn,
-#updateWikiBtn,
-#reviewDraftBtn {
-  grid-column: span 2;
+.cloud-actions {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.cloud-actions summary {
+  padding: 9px 11px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cloud-actions summary:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.cloud-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+
+.cloud-action-grid .btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.prompt-pack-helper {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 11px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.prompt-pack-helper[hidden] {
+  display: none;
+}
+
+.prompt-pack-helper-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.prompt-pack-helper-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 @media (max-width: 360px) {
   .wiki-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
-  #editWikiBtn,
-  #copyPromptPackBtn,
-  #generateWikiBtn,
-  #updateWikiBtn {
-    grid-column: span 1;
-  }
-
-  #reviewDraftBtn {
-    grid-column: 1 / -1;
+  .cloud-action-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -535,6 +592,11 @@ body {
 
 .ask-message-evidence {
   background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.ask-message-suggestions {
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
@@ -1578,7 +1640,7 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1800;
   padding: 20px;
   opacity: 0;
   transition: opacity var(--transition-fast);
@@ -2086,7 +2148,7 @@ body {
   box-shadow: var(--shadow-xl);
   opacity: 0;
   transition: opacity var(--transition-normal), transform var(--transition-normal);
-  z-index: 200;
+  z-index: 2200;
   will-change: transform, opacity;
   backface-visibility: hidden;
 }

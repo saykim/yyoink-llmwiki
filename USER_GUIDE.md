@@ -11,7 +11,7 @@ yyoink-wiki는 웹에서 찾은 문장, 페이지 본문, 메모, 클립보드 �
 1. 웹에서 자료를 Source로 모읍니다.
 2. Topic별로 자료를 분류합니다.
 3. Wiki 탭에서 Topic Wiki를 직접 정리합니다.
-4. Ask 탭에서 저장한 자료 안에서 근거를 찾습니다.
+4. Evidence 탭에서 저장한 자료 안에서 근거를 찾습니다.
 5. Copy Prompt Pack으로 ChatGPT/Claude에 붙여넣을 프롬프트 패키지를 만듭니다.
 
 OpenAI API를 직접 호출하는 Cloud 기능은 선택 사항입니다. 처음 사용하는 경우에는 `Cloud Generate`, `Cloud Update`를 쓰지 않아도 됩니다.
@@ -21,9 +21,9 @@ OpenAI API를 직접 호출하는 Cloud 기능은 선택 사항입니다. 처음
 | 용어 | 의미 |
 | --- | --- |
 | Source | 웹에서 저장한 선택 텍스트, 페이지 본문, 메모, 클립보드 텍스트입니다. |
-| Topic | 하나의 조사 주제입니다. 현재 UI에는 일부 `Project`라고 표시되지만, 이 설명서에서는 Topic과 Project를 같은 의미로 사용합니다. |
+| Topic | 하나의 조사 주제입니다. 자료를 나누는 기본 단위입니다. |
 | Topic Wiki | 한 Topic 안의 Source를 읽고 사용자가 직접 정리한 Markdown 위키입니다. |
-| Ask | 외부 AI를 호출하지 않고 현재 Topic의 Wiki와 Source 안에서 관련 근거를 검색하는 기능입니다. |
+| Evidence | 외부 AI를 호출하지 않고 현재 Topic의 Wiki와 Source 안에서 관련 근거를 검색하는 기능입니다. |
 | Prompt Pack | 현재 Topic의 Wiki, Source Library, 질문을 ChatGPT/Claude에 붙여넣기 좋게 묶은 텍스트입니다. |
 | Cloud AI | OpenAI API key를 넣은 사용자만 선택적으로 쓰는 직접 API 호출 기능입니다. |
 
@@ -48,7 +48,7 @@ OpenAI API를 직접 호출하는 Cloud 기능은 선택 사항입니다. 처음
 처음에는 아래 순서대로만 사용하면 됩니다.
 
 1. yyoink-wiki 사이드 패널을 엽니다.
-2. 상단 Topic 선택 영역에서 `All Projects`를 누릅니다.
+2. 상단 Topic 선택 영역에서 `All Topics`를 누릅니다.
 3. `New`를 눌러 새 Topic을 만듭니다.
    - 예: `AI 검색 제품 조사`, `논문 리뷰`, `블로그 글감`
 4. 조사할 웹페이지로 이동합니다.
@@ -97,7 +97,7 @@ Source를 수집하고 관리하는 곳입니다.
 - `Cloud Update`: 선택적 OpenAI API 기능입니다.
 - `Review Draft`: Cloud AI가 만든 초안을 검토하고 승인 또는 거절합니다.
 
-### Ask 탭
+### Evidence 탭
 
 현재 Topic 안에서만 근거를 찾는 로컬 검색 화면입니다.
 
@@ -105,19 +105,19 @@ Source를 수집하고 관리하는 곳입니다.
 - `Find Evidence`: Topic Wiki와 Source에서 관련 근거를 찾습니다.
 - `Copy Prompt Pack`: 입력한 질문을 포함한 Prompt Pack을 복사합니다.
 
-Ask는 ChatGPT/Claude에 질문하는 기능이 아닙니다. 저장한 자료 안에서 관련 근거를 찾아주는 Evidence Finder입니다.
+Evidence는 ChatGPT/Claude에 질문하는 기능이 아닙니다. 저장한 자료 안에서 관련 근거를 찾아주는 Evidence Finder입니다.
 
 ## 6. Topic 만들고 선택하기
 
 Topic은 자료를 나누는 기본 단위입니다.
 
-1. 상단의 `All Projects` 또는 현재 Topic 이름을 누릅니다.
+1. 상단의 `All Topics` 또는 현재 Topic 이름을 누릅니다.
 2. 드롭다운에서 `New`를 누릅니다.
 3. Topic 이름을 입력합니다.
 4. 색상을 선택합니다.
-5. `Create Project`를 누릅니다.
+5. `Create Topic`을 누릅니다.
 
-이후 저장하는 Source는 선택된 Topic에 들어갑니다. `All Projects` 상태에서는 전체 Source를 볼 수 있지만, Wiki와 Prompt Pack 작업은 특정 Topic을 선택하고 하는 것이 좋습니다.
+이후 저장하는 Source는 선택된 Topic에 들어갑니다. `All Topics` 상태에서는 전체 Source를 볼 수 있지만, Wiki와 Prompt Pack 작업은 특정 Topic을 선택하고 하는 것이 좋습니다.
 
 권장 방식:
 
@@ -229,14 +229,14 @@ Topic Wiki는 AI가 자동으로 만들어주는 문서가 아니라, 사용자�
 - 확인이 필요한 내용은 `Open Questions`에 남깁니다.
 - 나중에 ChatGPT/Claude가 인용할 수 있도록 Source와 연결되는 단서를 남깁니다.
 
-## 9. Ask로 로컬 근거 찾기
+## 9. Evidence로 로컬 근거 찾기
 
-Ask는 현재 Topic 안에서만 검색합니다. 외부 AI를 호출하지 않으며 API key도 필요 없습니다.
+Evidence는 현재 Topic 안에서만 검색합니다. 외부 AI를 호출하지 않으며 API key도 필요 없습니다.
 
 사용 예:
 
 1. Topic을 선택합니다.
-2. `Ask` 탭으로 이동합니다.
+2. `Evidence` 탭으로 이동합니다.
 3. 질문을 입력합니다.
    - 예: `가격 정책 관련 근거`
    - 예: `보안 리스크`
@@ -245,7 +245,7 @@ Ask는 현재 Topic 안에서만 검색합니다. 외부 AI를 호출하지 않�
 5. 검색 결과에서 관련 Source와 excerpt를 확인합니다.
 6. 필요하면 `Open source`를 눌러 원문 페이지를 엽니다.
 
-Ask가 잘 찾지 못하는 경우:
+Evidence가 잘 찾지 못하는 경우:
 
 - 질문을 짧은 키워드 중심으로 바꿉니다.
 - Topic을 잘못 선택했는지 확인합니다.
@@ -274,10 +274,10 @@ Prompt Pack은 yyoink-wiki의 가장 중요한 출력물입니다. 현재 Topic�
 마지막에 추가 조사 질문도 정리해줘.
 ```
 
-### Ask 탭에서 질문 포함 Prompt Pack 만들기
+### Evidence 탭에서 질문 포함 Prompt Pack 만들기
 
 1. Topic을 선택합니다.
-2. `Ask` 탭으로 이동합니다.
+2. `Evidence` 탭으로 이동합니다.
 3. 질문을 입력합니다.
 4. `Copy Prompt Pack`을 누릅니다.
 5. ChatGPT 또는 Claude에 붙여넣습니다.
@@ -359,7 +359,7 @@ Cloud 기능은 OpenAI API key를 직접 입력한 사용자가 yyoink-wiki 안�
 1. Topic을 하나 만듭니다.
 2. 관련 페이지에서 핵심 문장을 Source로 저장합니다.
 3. 긴 글은 `Capture`로 저장합니다.
-4. `Ask`로 중요한 키워드의 근거를 확인합니다.
+4. `Evidence`로 중요한 키워드의 근거를 확인합니다.
 5. `Wiki`에서 직접 요약합니다.
 6. `Copy Prompt Pack`으로 ChatGPT/Claude에 넘겨 보고서 초안을 만듭니다.
 
@@ -376,7 +376,7 @@ Cloud 기능은 OpenAI API key를 직접 입력한 사용자가 yyoink-wiki 안�
 
 1. 비교할 제품군으로 Topic을 만듭니다.
 2. 각 제품 페이지, 가격 페이지, 문서 페이지를 Source로 저장합니다.
-3. Ask에서 `가격`, `보안`, `제한`, `API`, `라이선스` 같은 키워드로 근거를 찾습니다.
+3. Evidence에서 `가격`, `보안`, `제한`, `API`, `라이선스` 같은 키워드로 근거를 찾습니다.
 4. Wiki에 비교 기준별 메모를 적습니다.
 5. Prompt Pack을 복사해 표 형태 비교를 요청합니다.
 
@@ -402,7 +402,7 @@ Cloud 기능은 OpenAI API key를 직접 입력한 사용자가 yyoink-wiki 안�
 - 본문이 이미지로만 되어 있으면 텍스트 추출이 어려울 수 있습니다.
 - 필요한 부분을 드래그해 우클릭 저장하거나, 클립보드 저장을 사용합니다.
 
-### Ask 결과가 없습니다
+### Evidence 결과가 없습니다
 
 - 현재 선택된 Topic에 Source가 있는지 확인합니다.
 - 질문을 짧은 키워드로 바꿉니다.
@@ -428,7 +428,7 @@ Cloud 기능은 OpenAI API key를 직접 입력한 사용자가 yyoink-wiki 안�
 기본 기능은 로컬 중심으로 동작합니다.
 
 - Source, Topic, Wiki, Draft는 브라우저 로컬 저장소와 IndexedDB에 저장됩니다.
-- 기본 Wiki, Ask, Prompt Pack 기능은 외부 AI API를 호출하지 않습니다.
+- 기본 Wiki, Evidence, Prompt Pack 기능은 외부 AI API를 호출하지 않습니다.
 - Prompt Pack은 사용자가 직접 클립보드에 복사해 ChatGPT/Claude 웹앱에 붙여넣습니다.
 - Cloud Generate/Update를 직접 실행할 때만 선택된 Topic 자료가 OpenAI API로 전송됩니다.
 - 민감한 정보, 비밀번호, 개인정보는 Source로 저장하지 않는 것이 좋습니다.
@@ -444,7 +444,7 @@ Cloud 기능은 OpenAI API key를 직접 입력한 사용자가 yyoink-wiki 안�
 1. Topic 하나 만들기
 2. Source 5개 저장하기
 3. Wiki에 Summary와 Open Questions 작성하기
-4. Ask로 근거 1번 찾기
+4. Evidence로 근거 1번 찾기
 5. Copy Prompt Pack으로 ChatGPT/Claude에 붙여넣기
 
 이 흐름을 한 번 해보면 yyoink-wiki의 사용 방식이 잡힙니다.

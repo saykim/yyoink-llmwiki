@@ -53,12 +53,12 @@
         </div>
       </header>
 
-      <!-- Project Selector (Custom) -->
+      <!-- Topic Selector (Custom) -->
       <div class="project-selector" id="projectSelector">
         <button class="project-selector-trigger" id="projectTrigger">
           <span class="project-indicator" id="selectedProjectColor"></span>
           <span class="project-name" id="selectedProjectName"
-            >All Projects</span
+            >All Topics</span
           >
           <span class="project-count" id="selectedProjectCount">0</span>
           <svg
@@ -76,7 +76,7 @@
 
         <div class="project-dropdown" id="projectDropdown">
           <div class="dropdown-header">
-            <span>Projects</span>
+            <span>Topics</span>
             <button class="btn-new-project" id="addProjectBtnDropdown">
               <svg
                 width="12"
@@ -94,7 +94,7 @@
           </div>
 
           <div class="dropdown-list" id="projectDropdownList">
-            <!-- Projects will be rendered here -->
+            <!-- Topics will be rendered here -->
           </div>
 
           <div class="dropdown-footer">
@@ -112,7 +112,7 @@
                   d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
                 ></path>
               </svg>
-              Manage Projects
+              Manage Topics
             </button>
           </div>
         </div>
@@ -123,7 +123,9 @@
           Sources
         </button>
         <button class="workspace-tab" data-tab="wiki" id="wikiTab">Wiki</button>
-        <button class="workspace-tab" data-tab="ask" id="askTab">Ask</button>
+        <button class="workspace-tab" data-tab="ask" id="askTab">
+          Evidence
+        </button>
       </nav>
 
       <section class="workspace-panel active" id="sourcesPanel">
@@ -339,17 +341,23 @@
             <button class="btn btn-secondary" id="copyPromptPackBtn">
               Copy Prompt Pack
             </button>
-            <button class="btn btn-secondary" id="generateWikiBtn">
-              Cloud Generate
-            </button>
-            <button class="btn btn-secondary" id="updateWikiBtn">
-              Cloud Update
-            </button>
-            <button class="btn btn-secondary" id="reviewDraftBtn" title="Review Cloud Draft">
-              Review Draft
-            </button>
           </div>
+          <details class="cloud-actions">
+            <summary>Advanced Cloud AI</summary>
+            <div class="cloud-action-grid">
+              <button class="btn btn-secondary" id="generateWikiBtn">
+                Cloud Generate
+              </button>
+              <button class="btn btn-secondary" id="updateWikiBtn">
+                Cloud Update
+              </button>
+              <button class="btn btn-secondary" id="reviewDraftBtn" title="Review Cloud Draft">
+                Review Draft
+              </button>
+            </div>
+          </details>
         </div>
+        <div class="prompt-pack-helper" id="promptPackHelper" hidden></div>
         <article class="wiki-content" id="wikiContent"></article>
       </section>
 
@@ -360,7 +368,7 @@
             id="askInput"
             class="textarea"
             rows="3"
-            placeholder="Search this topic's local evidence..."
+            placeholder="Search local evidence in this topic..."
           ></textarea>
           <div class="ask-actions">
             <button class="btn btn-primary" id="askTopicBtn">Find Evidence</button>
@@ -379,18 +387,18 @@
 
     <!-- Modals -->
     <div class="modal-overlay" id="modalOverlay">
-      <!-- Add Project Modal -->
+      <!-- Add Topic Modal -->
       <div class="modal" id="addProjectModal">
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon">📁</div>
-            <h3>New Project</h3>
+            <h3>New Topic</h3>
           </div>
           <button class="btn-icon modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">Project Name</label>
+            <label class="form-label">Topic Name</label>
             <input
               type="text"
               id="projectNameInput"
@@ -447,7 +455,7 @@
         <div class="modal-footer">
           <button class="btn btn-ghost modal-cancel">Cancel</button>
           <button class="btn btn-primary" id="saveProjectBtn">
-            Create Project
+            Create Topic
           </button>
         </div>
       </div>
@@ -503,7 +511,7 @@
             ></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label">Project</label>
+            <label class="form-label">Topic</label>
             <select id="editSnippetProject" class="select"></select>
           </div>
         </div>
@@ -535,7 +543,7 @@
             ></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label">Project</label>
+            <label class="form-label">Topic</label>
             <select id="memoProject" class="select"></select>
           </div>
         </div>
@@ -661,18 +669,18 @@
         </div>
       </div>
 
-      <!-- Delete Project Modal -->
+      <!-- Delete Topic Modal -->
       <div class="modal" id="deleteProjectModal">
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon modal-icon-danger">🗑️</div>
-            <h3>Delete Project</h3>
+            <h3>Delete Topic</h3>
           </div>
           <button class="btn-icon modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <p class="modal-description" id="deleteProjectName">
-            Delete this project?
+            Delete this topic?
           </p>
           <div class="alert alert-warning">
             <svg
@@ -700,7 +708,7 @@
             <label class="radio-option">
               <input type="radio" name="snippetAction" value="move" />
               <span class="radio-custom"></span>
-              <span class="radio-label">Move to another project</span>
+              <span class="radio-label">Move to another topic</span>
             </label>
           </div>
           <select
@@ -712,23 +720,23 @@
         <div class="modal-footer">
           <button class="btn btn-ghost modal-cancel">Cancel</button>
           <button class="btn btn-danger" id="confirmDeleteProjectBtn">
-            Delete Project
+            Delete Topic
           </button>
         </div>
       </div>
 
-      <!-- Manage Projects Modal -->
+      <!-- Manage Topics Modal -->
       <div class="modal modal-lg" id="manageProjectsModal">
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon">📁</div>
-            <h3>Manage Projects</h3>
+            <h3>Manage Topics</h3>
           </div>
           <button class="btn-icon modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <div class="projects-list" id="manageProjectsList">
-            <!-- Projects will be rendered here -->
+            <!-- Topics will be rendered here -->
           </div>
         </div>
         <div class="modal-footer">
@@ -744,7 +752,7 @@
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            Add Project
+            Add Topic
           </button>
         </div>
       </div>

@@ -26,9 +26,9 @@ v3.0.0 (Developer-Ready)
 ### 1.5 Personal LLM Wiki MVP Direction
 - **목표**: yyoink-wiki를 단순 스니펫 저장소에서 "출처가 붙은 개인 연구 위키"로 전환한다.
 - **Source Records**: 선택 영역, 페이지 캡처, 메모, 클립보드 입력을 모두 `Source`로 저장하고 토픽에 연결한다.
-- **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Ask` 탭을 제공하며 같은 토픽 안에서 수집, 편집, 근거 검색을 이어갈 수 있어야 한다.
+- **Topic Workspace**: 사이드 패널은 `Sources`, `Wiki`, `Evidence` 탭을 제공하며 같은 토픽 안에서 수집, 편집, 근거 검색을 이어갈 수 있어야 한다.
 - **Prompt Pack Workflow**: 사용자는 현재 Topic의 WikiPage와 Source Library를 ChatGPT/Claude용 프롬프트 패키지로 복사할 수 있다.
-- **Evidence Finder**: `Ask`는 기본적으로 외부 AI를 호출하지 않고 현재 토픽의 WikiPage와 Sources를 로컬 검색해 관련 근거를 보여준다.
+- **Evidence Finder**: `Evidence`는 기본적으로 외부 AI를 호출하지 않고 현재 토픽의 WikiPage와 Sources를 로컬 검색해 관련 근거를 보여준다.
 - **Advanced Cloud AI**: OpenAI API key를 입력한 사용자는 기존 Cloud Generate/Update/Draft 기능을 선택적으로 사용할 수 있다.
 - **Portability**: JSON export는 `version: 2` 형식으로 토픽, 소스, 위키 페이지, AI 초안을 모두 보존한다. Markdown export는 위키 본문과 Source Library를 함께 제공한다.
 - **Non-goals for MVP**: 계정 동기화, 서버 백엔드, 협업 편집, 자동 백그라운드 AI 실행, 텔레메트리는 포함하지 않는다.
@@ -115,7 +115,7 @@ yyoink-wiki는 수집과 분류를 **수집하는 순간**에 동시에 처리�
 ### 5.5 Prompt Pack + Evidence Finder
 - **수동 Wiki 편집 (P0)**: API key 없이 Topic Wiki를 Markdown으로 작성/수정한다.
 - **Prompt Pack 복사 (P0)**: 현재 Topic, WikiPage, Source Library, 선택 질문을 ChatGPT/Claude에 붙여넣기 좋은 텍스트로 클립보드에 복사한다.
-- **로컬 근거 검색 (P0)**: `Ask`는 질문 키워드로 현재 Topic의 WikiPage와 Sources를 검색하고 관련 excerpt와 출처 링크를 보여준다.
+- **로컬 근거 검색 (P0)**: `Evidence`는 질문 키워드로 현재 Topic의 WikiPage와 Sources를 검색하고 관련 excerpt와 출처 링크를 보여준다.
 - **Advanced Cloud AI (P1)**: OpenAI API key를 입력한 사용자는 Cloud Generate/Update와 Draft Review를 선택적으로 사용할 수 있다.
 
 ---
@@ -341,7 +341,7 @@ Container
 │   │   ├── Topic Status
 │   │   ├── Generate/Update/Review Actions
 │   │   └── Wiki Markdown Preview
-│   └── Ask
+│   └── Evidence
 │       ├── Topic-grounded answer thread
 │       └── Question input
 ├── Footer Actions
@@ -441,7 +441,7 @@ Container
 ### 11.2 데이터 보안
 - Source, Topic, WikiPage, AIDraft는 IndexedDB에 로컬 저장된다.
 - 설정과 선택적 OpenAI API key는 `chrome.storage.local`에 로컬 저장된다.
-- 기본 Wiki/Ask/Prompt Pack 기능은 외부 AI를 호출하지 않는다.
+- 기본 Wiki/Evidence/Prompt Pack 기능은 외부 AI를 호출하지 않는다.
 - 사용자가 Advanced Cloud AI의 Cloud Generate/Update를 실행할 때만 선택된 토픽 자료가 OpenAI API로 전송된다.
 - Content Security Policy (CSP) 준수: 인라인 스크립트 금지.
 - 텔레메트리, 계정 동기화, 제품 분석 이벤트 전송은 없음.

@@ -33,7 +33,7 @@ Source, Topic, WikiPage, AI Draft는 브라우저의 IndexedDB에 저장됩니�
 
 ## Prompt Pack 및 AI 기능
 
-기본 Wiki, Ask, Prompt Pack 기능은 API key 없이 로컬에서 동작합니다. Prompt Pack은 사용자가 직접 ChatGPT/Claude 같은 구독형 AI 웹앱에 붙여넣을 수 있도록 클립보드에 복사됩니다.
+기본 Wiki, Evidence, Prompt Pack 기능은 API key 없이 로컬에서 동작합니다. Prompt Pack은 사용자가 직접 ChatGPT/Claude 같은 구독형 AI 웹앱에 붙여넣을 수 있도록 클립보드에 복사됩니다.
 
 OpenAI Cloud 기능은 선택 사항입니다. 사용자가 OpenAI API key를 입력하고 `Cloud Generate` 또는 `Cloud Update`를 직접 실행할 때만 선택된 Topic의 Source와 WikiPage가 OpenAI API로 전송됩니다.
 
@@ -114,7 +114,7 @@ Sources, Topics, WikiPages, and AI Drafts are stored locally in browser IndexedD
 
 ## Prompt Pack and AI Features
 
-The default Wiki, Ask, and Prompt Pack features run locally without an API key. Prompt Packs are copied to your clipboard so you can paste them into subscription AI web apps such as ChatGPT or Claude yourself.
+The default Wiki, Evidence, and Prompt Pack features run locally without an API key. Prompt Packs are copied to your clipboard so you can paste them into subscription AI web apps such as ChatGPT or Claude yourself.
 
 OpenAI Cloud features are optional. When you enter an OpenAI API key and explicitly run `Cloud Generate` or `Cloud Update`, the selected Topic's Sources and WikiPage are sent to the OpenAI API.
 

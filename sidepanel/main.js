@@ -753,7 +753,7 @@ function renderProjectDropdown() {
   syncLegacyAliases();
 
   if (selectedProjectId === "all") {
-    elements.selectedProjectName.textContent = "All Projects";
+    elements.selectedProjectName.textContent = "All Topics";
     elements.selectedProjectColor.classList.add("all");
     elements.selectedProjectColor.style.background = "";
     elements.selectedProjectCount.textContent = snippets.length;
@@ -775,7 +775,7 @@ function renderProjectDropdown() {
     }" data-id="all">
       <span class="project-indicator all"></span>
       <div class="project-info">
-        <span class="project-name">All Projects</span>
+        <span class="project-name">All Topics</span>
         <span class="project-meta">${snippets.length} snippets</span>
       </div>
       ${selectedProjectId === "all" ? '<span class="check-icon">✓</span>' : ""}
@@ -1009,21 +1009,42 @@ function renderWikiPanel() {
 
 function buildDefaultWikiMarkdown(topic, topicSources) {
   const sourceList = (topicSources || [])
-    .slice(0, 12)
-    .map((source) => `- [${source.id}] ${source.pageTitle || source.domain || source.type}`)
+    .slice(0, 10)
+    .map((source) => {
+      const title = source.pageTitle || source.domain || source.type || "Source";
+      const excerpt = String(source.text || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 220);
+      return [
+        `- [${source.id}] ${title}`,
+        `  - URL: ${source.sourceUrl || "local"}`,
+        `  - Evidence: ${excerpt || "No excerpt available."}`,
+      ].join("\n");
+    })
     .join("\n");
 
   return [
     `# ${topic?.title || topic?.name || "Topic Wiki"}`,
     "",
     "## Summary",
+    "- What is the topic about?",
+    "- What matters most so far?",
     "",
     "## Key Notes",
+    "- Claim:",
+    "- Evidence:",
+    "- Source IDs:",
+    "",
+    "## Evidence Map",
+    sourceList || "- No sources collected yet.",
     "",
     "## Open Questions",
+    "- What evidence is still missing?",
+    "- What should be checked next?",
     "",
-    "## Sources",
-    sourceList || "- No sources collected yet.",
+    "## Contradictions / Gaps",
+    "-",
   ].join("\n");
 }
 
@@ -1093,9 +1114,58 @@ async function copyPromptPack(question = "") {
 
   try {
     await navigator.clipboard.writeText(promptPack);
+    showPromptPackSuggestions(question);
     showToast("Prompt Pack copied");
   } catch {
     showToast("Could not copy Prompt Pack");
+  }
+}
+
+function buildPromptPackSuggestions(question = "") {
+  if (question) {
+    return [
+      "Answer the question using only the supplied Topic Wiki and Source Library. Cite source IDs for every factual claim.",
+      "List evidence that supports the answer, evidence that is missing, and any contradictions.",
+      "Turn the answer into a concise decision memo with confidence level and follow-up research tasks.",
+    ];
+  }
+
+  return [
+    "Use only the supplied sources to rewrite the Topic Wiki as a clean Markdown brief with citations.",
+    "Create a table of key claims, supporting source IDs, weak evidence, contradictions, and missing information.",
+    "Suggest the next 5 research questions that would make this Topic more complete.",
+  ];
+}
+
+function renderSuggestionList(container, suggestions) {
+  container.replaceChildren();
+
+  const title = document.createElement("div");
+  title.className = "prompt-pack-helper-title";
+  title.textContent = "Prompt Pack copied. Try one of these in ChatGPT/Claude:";
+
+  const list = document.createElement("ol");
+  list.className = "prompt-pack-helper-list";
+  suggestions.forEach((suggestion) => {
+    const item = document.createElement("li");
+    item.textContent = suggestion;
+    list.appendChild(item);
+  });
+
+  container.append(title, list);
+}
+
+function showPromptPackSuggestions(question = "") {
+  const suggestions = buildPromptPackSuggestions(question);
+  const helper = document.getElementById("promptPackHelper");
+  if (helper) {
+    helper.hidden = false;
+    renderSuggestionList(helper, suggestions);
+  }
+
+  const evidencePanel = document.getElementById("askPanel");
+  if (evidencePanel?.classList.contains("active")) {
+    appendPromptSuggestions(suggestions);
   }
 }
 
@@ -1276,7 +1346,19 @@ function appendEvidenceResults(results) {
   thread.scrollTop = thread.scrollHeight;
 }
 
-// Manage Projects
+function appendPromptSuggestions(suggestions) {
+  const thread = document.getElementById("askThread");
+  if (!thread) return;
+
+  const div = document.createElement("div");
+  div.className = "ask-message ask-message-suggestions";
+  renderSuggestionList(div, suggestions);
+
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+// Manage Topics
 function renderManageProjectsList() {
   const list = document.getElementById("manageProjectsList");
   if (!list) return;
@@ -1299,7 +1381,7 @@ function renderManageProjectsList() {
           ${
             !isDefault
               ? `
-            <button class="btn-icon btn-delete-project" title="Delete Project">
+            <button class="btn-icon btn-delete-project" title="Delete Topic">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1371,7 +1453,7 @@ function confirmDeleteProject() {
   renderProjectDropdown();
   renderSnippets();
   closeAllModals();
-  showToast("Project deleted");
+  showToast("Topic deleted");
   deleteProjectId = null;
 }
 
@@ -1569,12 +1651,12 @@ function deleteSnippet(id) {
   showToast("Snippet deleted");
 }
 
-// Project Functions
+// Topic Functions
 function saveNewProject() {
   const name = document.getElementById("projectNameInput").value.trim();
 
   if (!name) {
-    showToast("Please enter a project name");
+    showToast("Please enter a topic name");
     return;
   }
 
@@ -1602,9 +1684,9 @@ function saveNewProject() {
     });
     sources.unshift(source);
     window.pendingSnippetData = null;
-    showToast("Project created & snippet saved!");
+    showToast("Topic created & source saved!");
   } else {
-    showToast("Project created!");
+    showToast("Topic created!");
   }
 
   saveData();
@@ -1846,6 +1928,7 @@ async function handleImport(e) {
 
 // Modal Functions
 function openModal(modalId) {
+  closeProjectDropdown();
   elements.modalOverlay.classList.add("active");
   document.getElementById(modalId).classList.add("active");
 }

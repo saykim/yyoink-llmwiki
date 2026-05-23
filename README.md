@@ -7,7 +7,7 @@ yyoink-wiki is a Chrome extension for collecting web sources into topic-based pe
 1. 웹에서 Source를 수집합니다.
 2. Topic별로 자료를 정리합니다.
 3. Wiki 탭에서 Topic Wiki를 직접 작성합니다.
-4. Ask 탭에서 로컬 근거를 찾습니다.
+4. Evidence 탭에서 로컬 근거를 찾습니다.
 5. Copy Prompt Pack으로 ChatGPT/Claude에 붙여넣을 프롬프트 패키지를 만듭니다.
 
 처음 사용하는 경우 [USER_GUIDE.md](USER_GUIDE.md)를 먼저 읽으세요.
@@ -22,4 +22,4 @@ yyoink-wiki is a Chrome extension for collecting web sources into topic-based pe
 
 ## Privacy
 
-기본 Wiki, Ask, Prompt Pack 기능은 외부 AI API를 호출하지 않습니다. 자세한 내용은 [PrivacyGuide.md](PrivacyGuide.md)를 참고하세요.
+기본 Wiki, Evidence, Prompt Pack 기능은 외부 AI API를 호출하지 않습니다. 자세한 내용은 [PrivacyGuide.md](PrivacyGuide.md)를 참고하세요.
