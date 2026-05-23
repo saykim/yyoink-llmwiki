@@ -7,9 +7,14 @@
  */
 
 // State
-let snippets = [];
-let projects = [];
-let selectedProjectId = "all";
+let topics = [];
+let sources = [];
+let wikiPages = [];
+let aiDrafts = [];
+let snippets = sources;
+let projects = topics;
+let selectedTopicId = "all";
+let selectedProjectId = selectedTopicId;
 let editingSnippetId = null;
 let selectedColor = "#6366f1";
 let deleteProjectId = null;
@@ -314,26 +319,50 @@ function cacheElements() {
 }
 
 async function loadData() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(["snippets", "projects"], (result) => {
-      snippets = result.snippets || [];
-      projects = result.projects || [
-        {
-          id: "default",
-          name: "Default",
-          color: "#6366f1",
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      resolve();
+  await YyoinkWiki.migration.migrateLegacyDataIfNeeded();
+  topics = await YyoinkWiki.repository.getAll("topics");
+  sources = await YyoinkWiki.repository.getAll("sources");
+  wikiPages = await YyoinkWiki.repository.getAll("wikiPages");
+  aiDrafts = await YyoinkWiki.repository.getAll("aiDrafts");
+  syncLegacyAliases();
+
+  if (topics.length === 0) {
+    const fallbackTopic = YyoinkWiki.models.normalizeProjectToTopic({
+      id: "default",
+      name: "Default",
+      color: "#6366f1",
+      createdAt: new Date().toISOString(),
     });
-  });
+    await YyoinkWiki.repository.put("topics", fallbackTopic);
+    topics = [fallbackTopic];
+    syncLegacyAliases();
+  }
 }
 
-function saveData() {
-  chrome.storage.local.set({ snippets, projects }, () => {
-    checkStorageUsage();
+async function saveData() {
+  syncLegacyAliases();
+  await YyoinkWiki.repository.replaceAll({
+    topics,
+    sources,
+    wikiPages,
+    aiDrafts,
   });
+  syncLegacyAliases();
+  checkStorageUsage();
+}
+
+function syncLegacyAliases() {
+  selectedTopicId = selectedProjectId;
+  topics.forEach((topic) => {
+    if (!topic.title && topic.name) topic.title = topic.name;
+    if (!topic.name && topic.title) topic.name = topic.title;
+  });
+  sources.forEach((source) => {
+    if (!source.topicId && source.projectId) source.topicId = source.projectId;
+    if (!source.projectId && source.topicId) source.projectId = source.topicId;
+  });
+  projects = topics;
+  snippets = sources;
 }
 
 function checkStorageUsage() {
@@ -677,6 +706,8 @@ function closeProjectDropdown() {
 }
 
 function renderProjectDropdown() {
+  syncLegacyAliases();
+
   if (selectedProjectId === "all") {
     elements.selectedProjectName.textContent = "All Projects";
     elements.selectedProjectColor.classList.add("all");
@@ -754,6 +785,8 @@ function renderProjectDropdown() {
 }
 
 function renderSnippets() {
+  syncLegacyAliases();
+
   const searchTerm = elements.searchInput.value.toLowerCase();
   let filteredSnippets = snippets;
 
