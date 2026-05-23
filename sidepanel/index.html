@@ -566,6 +566,32 @@
           </div>
 
           <div class="settings-section">
+            <h4 class="settings-title">AI Provider</h4>
+            <div class="form-group">
+              <label class="form-label" for="aiApiKeyInput">OpenAI API Key</label>
+              <input
+                id="aiApiKeyInput"
+                class="input"
+                type="password"
+                placeholder="sk-..."
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="aiModelInput">Model</label>
+              <input
+                id="aiModelInput"
+                class="input"
+                type="text"
+                value="gpt-5-mini"
+              />
+            </div>
+            <button class="btn btn-secondary" id="saveAISettingsBtn">
+              Save AI Settings
+            </button>
+          </div>
+
+          <div class="settings-section">
             <h4 class="settings-title">About</h4>
             <div class="about-info">
               <p>yyoink v1.0.0</p>
@@ -574,6 +600,25 @@
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Draft Review Modal -->
+      <div class="modal modal-lg" id="draftReviewModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">🧠</div>
+            <h3>Review AI Draft</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="draftMarkdownText" class="textarea" rows="14"></textarea>
+          <div class="draft-meta" id="draftMeta"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="rejectDraftBtn">Reject</button>
+          <button class="btn btn-primary" id="approveDraftBtn">Approve</button>
         </div>
       </div>
 

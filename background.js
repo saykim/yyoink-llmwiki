@@ -11,6 +11,7 @@ importScripts(
   "shared/ai-contract.js",
   "shared/idb-repository.js",
   "shared/migration.js",
+  "background/ai-service.js",
 );
 
 // Track side panel open state per window
@@ -239,6 +240,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "REFRESH_MENUS") {
     updateContextMenus();
     sendResponse({ success: true });
+  }
+
+  if (message.type === "RUN_AI_ACTION") {
+    YyoinkWiki.aiService
+      .runAIAction({
+        action: message.action,
+        topicId: message.topicId,
+        question: message.question || "",
+      })
+      .then(sendResponse)
+      .catch((error) => sendResponse({ error: error.message }));
+    return true;
   }
   
   return true;

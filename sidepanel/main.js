@@ -18,6 +18,7 @@ let selectedProjectId = selectedTopicId;
 let editingSnippetId = null;
 let selectedColor = "#6366f1";
 let deleteProjectId = null;
+let reviewingDraftId = null;
 let copyBypassEnabled = false;
 let hardcoreModeEnabled = false;
 
@@ -522,8 +523,28 @@ function setupEventListeners() {
   });
 
   document.getElementById("settingsBtn").addEventListener("click", () => {
+    loadAISettings();
     openModal("settingsModal");
   });
+
+  document
+    .getElementById("saveAISettingsBtn")
+    ?.addEventListener("click", saveAISettings);
+  document
+    .getElementById("generateWikiBtn")
+    ?.addEventListener("click", () => runWikiAIAction("generateWiki"));
+  document
+    .getElementById("updateWikiBtn")
+    ?.addEventListener("click", () => runWikiAIAction("updateWiki"));
+  document
+    .getElementById("reviewDraftBtn")
+    ?.addEventListener("click", openLatestDraft);
+  document
+    .getElementById("approveDraftBtn")
+    ?.addEventListener("click", approveCurrentDraft);
+  document
+    .getElementById("rejectDraftBtn")
+    ?.addEventListener("click", rejectCurrentDraft);
 
   // Theme options
   document.querySelectorAll(".theme-option").forEach((btn) => {
@@ -967,6 +988,106 @@ function renderWikiPanel() {
   contentEl.innerHTML = wikiPage
     ? `<p>${markdownToSafeHtml(wikiPage.bodyMarkdown)}</p>`
     : `<p>No approved wiki page yet.</p>`;
+}
+
+function loadAISettings() {
+  chrome.storage.local.get(["aiApiKey", "aiModel"], (result) => {
+    const keyInput = document.getElementById("aiApiKeyInput");
+    const modelInput = document.getElementById("aiModelInput");
+    if (keyInput) keyInput.value = result.aiApiKey || "";
+    if (modelInput) modelInput.value = result.aiModel || "gpt-5-mini";
+  });
+}
+
+function saveAISettings() {
+  const aiApiKey = document.getElementById("aiApiKeyInput").value.trim();
+  const aiModel = document.getElementById("aiModelInput").value.trim() || "gpt-5-mini";
+  chrome.storage.local.set({ aiApiKey, aiModel }, () => showToast("AI settings saved"));
+}
+
+async function runWikiAIAction(action) {
+  const topic = getSelectedTopic();
+  if (!topic) {
+    showToast("Select a topic first");
+    return;
+  }
+
+  showToast(action === "generateWiki" ? "Generating wiki..." : "Updating wiki...");
+  const result = await new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: "RUN_AI_ACTION", action, topicId: topic.id }, resolve);
+  });
+
+  if (result?.draft) {
+    aiDrafts.unshift(result.draft);
+    await saveData();
+    renderWikiPanel();
+    if (result.draft.status === "ready") {
+      openDraft(result.draft);
+    } else {
+      showToast(result.error || "AI failed");
+    }
+  } else {
+    showToast(result?.error || "AI failed");
+  }
+}
+
+function openLatestDraft() {
+  const draft = getSelectedDrafts().find((item) => item.status === "ready");
+  if (!draft) {
+    showToast("No draft ready");
+    return;
+  }
+  openDraft(draft);
+}
+
+function openDraft(draft) {
+  reviewingDraftId = draft.id;
+  document.getElementById("draftMarkdownText").value =
+    draft.proposedWikiMarkdown || draft.generatedSummary || "";
+  document.getElementById("draftMeta").textContent =
+    `${draft.sourceCitations.length} citations, ${draft.weakClaims.length} weak claims`;
+  openModal("draftReviewModal");
+}
+
+async function approveCurrentDraft() {
+  const draft = aiDrafts.find((item) => item.id === reviewingDraftId);
+  const topic = getSelectedTopic();
+  if (!draft || !topic) return;
+
+  draft.status = "approved";
+  draft.proposedWikiMarkdown = document.getElementById("draftMarkdownText").value;
+  draft.updatedAt = new Date().toISOString();
+
+  if (draft.type === "generateWiki" || draft.type === "updateWiki") {
+    const existingPage = getSelectedWikiPage();
+    const page = YyoinkWiki.models.createWikiPageFromDraft({
+      draft,
+      existingPage,
+      title: topic.title || topic.name,
+    });
+    wikiPages = wikiPages.filter((item) => item.id !== page.id);
+    wikiPages.unshift(page);
+    await YyoinkWiki.repository.markTopicSourcesProcessed(topic.id, page.sourceIds);
+    sources = await YyoinkWiki.repository.getAll("sources");
+    syncLegacyAliases();
+  }
+
+  await saveData();
+  closeAllModals();
+  renderWikiPanel();
+  renderSnippets();
+  showToast("Draft approved");
+}
+
+async function rejectCurrentDraft() {
+  const draft = aiDrafts.find((item) => item.id === reviewingDraftId);
+  if (!draft) return;
+  draft.status = "rejected";
+  draft.updatedAt = new Date().toISOString();
+  await saveData();
+  closeAllModals();
+  renderWikiPanel();
+  showToast("Draft rejected");
 }
 
 // Manage Projects
@@ -1464,6 +1585,7 @@ function closeAllModals() {
     .querySelectorAll(".modal")
     .forEach((m) => m.classList.remove("active"));
   editingSnippetId = null;
+  reviewingDraftId = null;
 
   const deleteRadio = document.querySelector(
     'input[name="snippetAction"][value="delete"]',
