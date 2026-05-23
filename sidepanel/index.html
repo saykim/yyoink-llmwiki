@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="SYK (ooak.studio.101)" />
+    <meta name="copyright" content="© 2026 ooak.studio.101. All rights reserved." />
+    <meta name="description" content="Grab anything from the web - bypass copy protection, collect snippets, organize by project" />
+    <title>yyoink</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <div class="logo-text">
+            <h1><span class="logo-brand">yyoink</span></h1>
+            <p class="logo-tagline">Collect & Organize</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button
+            class="btn-icon btn-coffee"
+            id="coffeeButton"
+            title="Buy me a coffee"
+          >
+            <img
+              src="../buy-me-a-coffee-logo-png.png"
+              alt="Buy me a coffee"
+              class="coffee-icon"
+            />
+          </button>
+          <button class="btn-icon" id="settingsBtn" title="Settings">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Project Selector (Custom) -->
+      <div class="project-selector" id="projectSelector">
+        <button class="project-selector-trigger" id="projectTrigger">
+          <span class="project-indicator" id="selectedProjectColor"></span>
+          <span class="project-name" id="selectedProjectName"
+            >All Projects</span
+          >
+          <span class="project-count" id="selectedProjectCount">0</span>
+          <svg
+            class="dropdown-arrow"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <div class="project-dropdown" id="projectDropdown">
+          <div class="dropdown-header">
+            <span>Projects</span>
+            <button class="btn-new-project" id="addProjectBtnDropdown">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New
+            </button>
+          </div>
+
+          <div class="dropdown-list" id="projectDropdownList">
+            <!-- Projects will be rendered here -->
+          </div>
+
+          <div class="dropdown-footer">
+            <button class="dropdown-footer-btn" id="manageProjectsBtn">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+              Manage Projects
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Bar -->
+      <div class="quick-actions">
+        <button
+          class="btn btn-primary"
+          id="capturePageBtn"
+          data-tooltip="Capture Page • Save all content"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          Capture
+        </button>
+        <button
+          class="btn btn-secondary"
+          id="copyAllBtn"
+          data-tooltip="Copy All • Copy all snippets"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path
+              d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+            ></path>
+          </svg>
+          Copy
+        </button>
+        <button
+          class="btn-icon"
+          id="bypassBtn"
+          data-tooltip="Unlock Copy • 길게 누르면 강력 모드"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </button>
+        <button
+          class="btn-icon"
+          id="forceSelectBtn"
+          data-tooltip="Force Select • Extract text"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
+            <path d="M13 13l6 6"></path>
+          </svg>
+        </button>
+        <button
+          class="btn-icon"
+          id="memoBtn"
+          data-tooltip="Quick Memo • Write note"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+            ></path>
+            <path
+              d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+            ></path>
+          </svg>
+        </button>
+        <button
+          class="btn-icon"
+          id="pasteBtn"
+          data-tooltip="Paste • From clipboard"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+            ></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <svg
+          class="search-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Search snippets..."
+        />
+        <div class="search-shortcut">⌘K</div>
+      </div>
+
+      <!-- Snippets List -->
+      <div class="snippets-container" id="snippetsContainer">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-illustration">
+            <div class="empty-icon">📝</div>
+            <div class="empty-circles">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          <h3>No snippets yet</h3>
+          <p>Right-click on any text to save</p>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="footer-actions">
+        <div class="footer-left">
+          <span class="snippet-count" id="snippetCount">0 snippets</span>
+        </div>
+        <div class="footer-right">
+          <button class="btn btn-ghost btn-sm" id="importBtn">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Import
+          </button>
+          <button class="btn btn-ghost btn-sm" id="exportBtn">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Credit -->
+      <div class="footer-credit">
+        <span class="credit-text">ooak.studio.101</span>
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalOverlay">
+      <!-- Add Project Modal -->
+      <div class="modal" id="addProjectModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">📁</div>
+            <h3>New Project</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Project Name</label>
+            <input
+              type="text"
+              id="projectNameInput"
+              class="input"
+              placeholder="e.g., Market Research"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <div class="color-picker" id="colorOptions">
+              <button
+                class="color-option selected"
+                data-color="#6366f1"
+                style="background: #6366f1"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#8b5cf6"
+                style="background: #8b5cf6"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#ec4899"
+                style="background: #ec4899"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#ef4444"
+                style="background: #ef4444"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#f59e0b"
+                style="background: #f59e0b"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#10b981"
+                style="background: #10b981"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#06b6d4"
+                style="background: #06b6d4"
+              ></button>
+              <button
+                class="color-option"
+                data-color="#3b82f6"
+                style="background: #3b82f6"
+              ></button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost modal-cancel">Cancel</button>
+          <button class="btn btn-primary" id="saveProjectBtn">
+            Create Project
+          </button>
+        </div>
+      </div>
+
+      <!-- Export Modal -->
+      <div class="modal" id="exportModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">📤</div>
+            <h3>Export Snippets</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description">Choose your preferred format:</p>
+          <div class="format-options">
+            <button class="format-btn" data-format="json">
+              <div class="format-icon">{ }</div>
+              <span class="format-name">JSON</span>
+              <span class="format-desc">Full data backup</span>
+            </button>
+            <button class="format-btn" data-format="md">
+              <div class="format-icon">📝</div>
+              <span class="format-name">Markdown</span>
+              <span class="format-desc">Readable format</span>
+            </button>
+            <button class="format-btn" data-format="txt">
+              <div class="format-icon">📄</div>
+              <span class="format-name">Plain Text</span>
+              <span class="format-desc">Simple text</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Snippet Modal -->
+      <div class="modal" id="editSnippetModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">✏️</div>
+            <h3>Edit Snippet</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea
+              id="editSnippetText"
+              class="textarea"
+              rows="6"
+              placeholder="Snippet text..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project</label>
+            <select id="editSnippetProject" class="select"></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost modal-cancel">Cancel</button>
+          <button class="btn btn-primary" id="saveSnippetBtn">
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      <!-- Memo Modal -->
+      <div class="modal" id="memoModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">📝</div>
+            <h3>Quick Memo</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea
+              id="memoText"
+              class="textarea"
+              rows="6"
+              placeholder="Write your memo..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project</label>
+            <select id="memoProject" class="select"></select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost modal-cancel">Cancel</button>
+          <button class="btn btn-primary" id="saveMemoBtn">Save Memo</button>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div class="modal modal-lg" id="settingsModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">⚙️</div>
+            <h3>Settings</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-section">
+            <h4 class="settings-title">Appearance</h4>
+            <div class="theme-options">
+              <button class="theme-option" data-theme="auto">
+                <div class="theme-preview theme-preview-auto">
+                  <span class="preview-light"></span>
+                  <span class="preview-dark"></span>
+                </div>
+                <span>Auto</span>
+              </button>
+              <button class="theme-option" data-theme="light">
+                <div class="theme-preview theme-preview-light"></div>
+                <span>Light</span>
+              </button>
+              <button class="theme-option" data-theme="dark">
+                <div class="theme-preview theme-preview-dark"></div>
+                <span>Dark</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4 class="settings-title">About</h4>
+            <div class="about-info">
+              <p>yyoink v1.0.0</p>
+              <p class="text-muted">
+                Collect and organize web snippets for your research
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Project Modal -->
+      <div class="modal" id="deleteProjectModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon modal-icon-danger">🗑️</div>
+            <h3>Delete Project</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-description" id="deleteProjectName">
+            Delete this project?
+          </p>
+          <div class="alert alert-warning">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              ></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>What should happen to the snippets?</span>
+          </div>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="snippetAction" value="delete" checked />
+              <span class="radio-custom"></span>
+              <span class="radio-label">Delete all snippets</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="snippetAction" value="move" />
+              <span class="radio-custom"></span>
+              <span class="radio-label">Move to another project</span>
+            </label>
+          </div>
+          <select
+            id="moveToProject"
+            class="select"
+            style="display: none; margin-top: 12px"
+          ></select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost modal-cancel">Cancel</button>
+          <button class="btn btn-danger" id="confirmDeleteProjectBtn">
+            Delete Project
+          </button>
+        </div>
+      </div>
+
+      <!-- Manage Projects Modal -->
+      <div class="modal modal-lg" id="manageProjectsModal">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon">📁</div>
+            <h3>Manage Projects</h3>
+          </div>
+          <button class="btn-icon modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="projects-list" id="manageProjectsList">
+            <!-- Projects will be rendered here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="addProjectBtnManage">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Project
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+      <div class="toast-icon" id="toastIcon">✓</div>
+      <span class="toast-message" id="toastMessage"></span>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input
+      type="file"
+      id="importFileInput"
+      accept=".json,.txt,.md"
+      style="display: none"
+    />
+
+    <script src="main.js"></script>
+  </body>
+</html>
