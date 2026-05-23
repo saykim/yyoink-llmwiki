@@ -251,6 +251,7 @@ async function init() {
   initVirtualScroller();
   renderProjectDropdown();
   renderSnippets();
+  renderWikiPanel();
   setupEventListeners();
   loadTheme();
 
@@ -387,6 +388,10 @@ function checkStorageUsage() {
 
 // Event Listeners
 function setupEventListeners() {
+  document.querySelectorAll(".workspace-tab").forEach((tab) => {
+    tab.addEventListener("click", () => switchWorkspaceTab(tab.dataset.tab));
+  });
+
   // Project dropdown
   elements.projectTrigger.addEventListener("click", toggleProjectDropdown);
 
@@ -775,6 +780,7 @@ function renderProjectDropdown() {
 
         renderProjectDropdown();
         renderSnippets();
+        renderWikiPanel();
         closeProjectDropdown();
       });
     });
@@ -892,10 +898,75 @@ function createSnippetCard(snippet) {
               )}" target="_blank" class="snippet-url-link">URL</a>`
             : ""
         }
+        <span class="source-status">${escapeHtml(snippet.aiStatus || "raw")}</span>
         <span class="snippet-date">${date}</span>
       </div>
     </div>
   `;
+}
+
+function switchWorkspaceTab(tabName) {
+  document.querySelectorAll(".workspace-tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === tabName);
+  });
+  document.querySelectorAll(".workspace-panel").forEach((panel) => {
+    panel.classList.toggle("active", panel.id === `${tabName}Panel`);
+  });
+  if (tabName === "wiki") renderWikiPanel();
+}
+
+function getSelectedTopic() {
+  return selectedProjectId === "all"
+    ? topics[0]
+    : topics.find((topic) => topic.id === selectedProjectId);
+}
+
+function getSelectedTopicSources() {
+  const topic = getSelectedTopic();
+  return topic ? sources.filter((source) => source.topicId === topic.id) : [];
+}
+
+function getSelectedWikiPage() {
+  const topic = getSelectedTopic();
+  return topic ? wikiPages.find((page) => page.topicId === topic.id) : null;
+}
+
+function getSelectedDrafts() {
+  const topic = getSelectedTopic();
+  return topic ? aiDrafts.filter((draft) => draft.topicId === topic.id) : [];
+}
+
+function markdownToSafeHtml(markdown) {
+  return escapeHtml(markdown || "")
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/\n/g, "<br>");
+}
+
+function renderWikiPanel() {
+  const topic = getSelectedTopic();
+  const wikiPage = getSelectedWikiPage();
+  const topicSources = getSelectedTopicSources();
+  const drafts = getSelectedDrafts();
+  const status = YyoinkWiki.models.deriveTopicStatus({
+    wikiPage,
+    sources: topicSources,
+    drafts,
+    isGenerating: false,
+  });
+
+  const statusEl = document.getElementById("wikiStatus");
+  const titleEl = document.getElementById("wikiTitle");
+  const contentEl = document.getElementById("wikiContent");
+  if (!statusEl || !titleEl || !contentEl) return;
+
+  statusEl.textContent = status;
+  titleEl.textContent = topic?.title || topic?.name || "Topic Wiki";
+  contentEl.innerHTML = wikiPage
+    ? `<p>${markdownToSafeHtml(wikiPage.bodyMarkdown)}</p>`
+    : `<p>No approved wiki page yet.</p>`;
 }
 
 // Manage Projects

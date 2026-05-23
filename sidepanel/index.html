@@ -118,8 +118,17 @@
         </div>
       </div>
 
-      <!-- Quick Actions Bar -->
-      <div class="quick-actions">
+      <nav class="workspace-tabs" aria-label="Topic workspace">
+        <button class="workspace-tab active" data-tab="sources" id="sourcesTab">
+          Sources
+        </button>
+        <button class="workspace-tab" data-tab="wiki" id="wikiTab">Wiki</button>
+        <button class="workspace-tab" data-tab="ask" id="askTab">Ask</button>
+      </nav>
+
+      <section class="workspace-panel active" id="sourcesPanel">
+        <!-- Quick Actions Bar -->
+        <div class="quick-actions">
         <button
           class="btn btn-primary"
           id="capturePageBtn"
@@ -278,7 +287,7 @@
       </div>
 
       <!-- Footer Actions -->
-      <div class="footer-actions">
+        <div class="footer-actions">
         <div class="footer-left">
           <span class="snippet-count" id="snippetCount">0 snippets</span>
         </div>
@@ -314,7 +323,42 @@
             Export
           </button>
         </div>
-      </div>
+        </div>
+      </section>
+
+      <section class="workspace-panel" id="wikiPanel">
+        <div class="wiki-toolbar">
+          <div>
+            <p class="wiki-status" id="wikiStatus">No wiki yet</p>
+            <h2 class="wiki-title" id="wikiTitle">Topic Wiki</h2>
+          </div>
+          <div class="wiki-actions">
+            <button class="btn btn-primary" id="generateWikiBtn">
+              Generate Wiki
+            </button>
+            <button class="btn btn-secondary" id="updateWikiBtn">
+              Update Wiki
+            </button>
+            <button class="btn btn-secondary" id="reviewDraftBtn">
+              Review Draft
+            </button>
+          </div>
+        </div>
+        <article class="wiki-content" id="wikiContent"></article>
+      </section>
+
+      <section class="workspace-panel" id="askPanel">
+        <div class="ask-thread" id="askThread"></div>
+        <div class="ask-input-row">
+          <textarea
+            id="askInput"
+            class="textarea"
+            rows="3"
+            placeholder="Ask this topic..."
+          ></textarea>
+          <button class="btn btn-primary" id="askTopicBtn">Ask</button>
+        </div>
+      </section>
 
       <!-- Credit -->
       <div class="footer-credit">
