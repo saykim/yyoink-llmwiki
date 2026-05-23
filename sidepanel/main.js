@@ -545,6 +545,9 @@ function setupEventListeners() {
   document
     .getElementById("rejectDraftBtn")
     ?.addEventListener("click", rejectCurrentDraft);
+  document
+    .getElementById("askTopicBtn")
+    ?.addEventListener("click", askCurrentTopic);
 
   // Theme options
   document.querySelectorAll(".theme-option").forEach((btn) => {
@@ -1088,6 +1091,55 @@ async function rejectCurrentDraft() {
   closeAllModals();
   renderWikiPanel();
   showToast("Draft rejected");
+}
+
+async function askCurrentTopic() {
+  const topic = getSelectedTopic();
+  const question = document.getElementById("askInput").value.trim();
+  if (!topic) {
+    showToast("Select a topic first");
+    return;
+  }
+  if (!question) {
+    showToast("Write a question first");
+    return;
+  }
+
+  appendAskMessage("user", question);
+  document.getElementById("askInput").value = "";
+
+  const result = await new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      { type: "RUN_AI_ACTION", action: "askTopic", topicId: topic.id, question },
+      resolve,
+    );
+  });
+
+  if (result?.draft) {
+    aiDrafts.unshift(result.draft);
+    await saveData();
+  }
+
+  if (result?.draft?.status === "ready") {
+    appendAskMessage(
+      "assistant",
+      result.draft.generatedSummary || result.draft.proposedWikiMarkdown,
+    );
+  } else {
+    appendAskMessage(
+      "assistant",
+      result?.error || result?.draft?.weakClaims?.[0] || "AI failed",
+    );
+  }
+}
+
+function appendAskMessage(role, text) {
+  const thread = document.getElementById("askThread");
+  const div = document.createElement("div");
+  div.className = `ask-message ask-message-${role}`;
+  div.textContent = text;
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
 }
 
 // Manage Projects

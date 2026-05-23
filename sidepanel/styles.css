@@ -454,6 +454,24 @@ body {
   line-height: 1.5;
 }
 
+.ask-message {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.ask-message-user {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.ask-message-assistant {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
 .project-selector-trigger {
   width: 100%;
   display: flex;
